@@ -1,3 +1,11 @@
+# Future plans with AI:
+# A setting generator.
+# an intelligent adventure writer.
+# Every Scene Type intelligent interpreter
+# a classifier that will differ between in-scene texts and out-of-scene commands.
+# Something that finds out if secret have been told.
+
+
 import openai
 import math
 import random
@@ -6,49 +14,32 @@ openai.api_key = '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'
 
 
 def main():
-    global settings
-    settings = {
-        'test': SETTING('test', npcs=[NPC('Una'), NPC('Jerry')], locations=[LOCATION('School'), LOCATION('house')])
-    }
-    prompt = '''The following classifies for each sentence whether it is an action, a question or speech.
-
-    Sentence: Hi, how are you?.
-    Type: Speech.
-
-    Sentence: I go into the room.
-    Type: Action.
-
-    Sentence: What do I see?
-    Type: Question.
-
-    Sentence: I sit down at the table.
-    Type: Action.
-
-    Sentence: I think so too.
-    Type: Speech.
-
-    Sentence: Probably.
-    Type: Speech.
-
-    Sentence: How does the room look?
-    Type: Question.'''
-    print(prompt)
-
-    pass
-
-
-def useai():
-    # A setting generator.
-    # an intelligent adventure writer.
-    # Every Scene Type intelligent interpreter
-    # a classifier that will differ between in-scene texts and out-of-scene commands.
-    # Something that finds out if secret have been told.
-    response = openai.Completion.create(model="text-davinci-002",
-                                        prompt="Say this is a test",
-                                        temperature=0,
-                                        max_tokens=6)
+    prompt = '''The following is a dialogue between a pair of star crossed lovers.'''
+    response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0, max_tokens=100)
     response = response['choices'][0]['text']
     print(response)
+    play_mumsadventure()
+
+def play_mumsadventure():
+    thede = NPC(name='thede')
+    sophie = NPC(name='sophie')
+    mama = NPC(name='mama', hostile=True)
+    papa = NPC(name='papa', hostile=True)
+    npcs = [thede, sophie, mama, papa]
+
+    wohnzimmer = LOCATION(name='wohnzimmer')
+    kueche = LOCATION(name='kueche')
+    locations = [wohnzimmer, kueche]
+
+    abendessen = SECRET(name="Heute gibt es Tomatenrisotto", where_to_find=[kueche, papa])
+    bettzeit = SECRET(name="Sophie muss um 20:00 ins Bett.", where_to_find=[mama, papa])
+    beruhigen = SECRET(name="Thede kann Sophie beruhigen", where_to_find=[thede, mama])
+    sieg = SECRET(name="won", where_to_find=[sophie])
+    secrets = [sieg, abendessen, bettzeit, beruhigen]
+
+    mumsadventure = ADVENTURE(major_npcs=npcs, major_locations=locations, major_secrets=secrets)
+
+    play(mumsadventure, analyse=True)
 
 
 # The following function is awful.
@@ -56,11 +47,11 @@ def play(adventure, conditions=None, analyse=True):
     if conditions is None:
         conditions = [None, [None]]
     former_scenes = []
-    end = False
-    while not end:
+    running_a = True
+    while running_a:
         scene = get_next_scene(adventure=adventure, all_former_scenes=former_scenes, conditions=conditions)
         if analyse:
-            print(type(scene))
+            print(scene.type)
             print('location: ' + scene.location.name)
             print('amount of npcs: ' + str(len(scene.npcs)))
             for j in scene.npcs:
@@ -69,24 +60,68 @@ def play(adventure, conditions=None, analyse=True):
             for j in scene.secrets:
                 print('Secret: ' + j.name)
         former_scenes.append(scene)
-        # describe room
-        # repeat:
-            # input
-            # classify input
-            # 1. (Question and Speech) Answer and go
-            # 2. (Action) in-scene-command
-            # execute directly (or even keep in talk)
-            # 3. change-scene-commands
-            # execute and break loop
-        conditions = [None, [None]]  # should depend on last scene.
+        print(scene.location.describe())
+        object_of_interest = scene.location
+        running_b = True
+        while running_b:
+            a = input('')  # single sentence input!
+            sort = classify(a)
+            if sort[0] == ' Question.':
+                if isinstance(object_of_interest, LOCATION):
+                    print(object_of_interest.describe(a))
+                elif isinstance(object_of_interest, NPC):
+                    print(object_of_interest.talk(a))
+            elif sort[0] == ' Speech.':
+                if isinstance(object_of_interest, NPC):
+                    print(object_of_interest.talk(a))
+                elif len(scene.npcs) > 0:
+                    cha = who(a, scene)
+                    if isinstance(cha, NPC):
+                        object_of_interest = cha
+                    else:
+                        object_of_interest = random.choice(scene.npcs)
+                    print(object_of_interest.talk(a))
+                else:
+                    print('You say these words, but there ist no one here to hear you.')
+            elif sort[1] == ' Change the room':
+                loc = where(sort[2], adventure)
+                if isinstance(loc, str):
+                    conditions = [None, [None]]
+                else:
+                    conditions = [loc, [None]]
+                running_b = False
+            elif sort[1] == ' Start a fight':  # with whom?
+                cha = who(sort[2], scene)
+                if isinstance(cha, NPC):
+                    object_of_interest = cha
+                if isinstance(object_of_interest, NPC):
+                    print(object_of_interest.fight(a))
+                else:
+                    print('Please repeat your sentence but specify who you intend to fight.')
+            elif sort[1] == ' Start a conversation':
+                cha = who(sort[2], scene)
+                if isinstance(cha, NPC):
+                    object_of_interest = cha
+                if isinstance(object_of_interest, NPC):
+                    print(object_of_interest.talk(a))
+                else:
+                    print('Please repeat your sentence but specify who you intend to start a conversation with.')
+                print(object_of_interest.talk('Hello'))
+            elif sort[1] == ' End a conversation':
+                object_of_interest = scene.location
+            elif sort[1] == ' Something else.':  # mal mit punkt (?mal ohne?)
+                object_of_interest = scene.location
+                print(object_of_interest.describe(a))
+            else:
+                print('Sorry, I don\'t know what you mean by that.')
         for i in scene.secrets:
             if i.name == "won":
                 if i.found:
-                    end = True
-        input('End of scene. (press enter to continue)')
+                    running_a = False
+        input('End of scene. (Press enter to continue)')
 
 
-def classify(input):
+def classify(a):
     # Should this differ between in-scene actions and out-of-scene actions?
     prompt = f'''The following classifies for each sentence whether it is an action, a question or speech. 
         
@@ -111,15 +146,14 @@ Type: Speech.
 Sentence: How does the room look?
 Type: Question.
 
-Sentence: {input}
+Sentence: {a}
 Type:'''
     response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0, max_tokens=12)
     response = response['choices'][0]['text']
-    print(f'Type of {input} is {response}')
-    if response == 'action':
+    if response == ' Action.':
         # Here could abilities get added.
-        prompt = f'''The following classifies what an action does. Actions either start a conversation, change the 
-room, start a fight or do something else.
+        prompt = f'''The following classifies what an action does. Actions either start a conversation, end a
+conversation, change the room, start a fight or do something else.
 
 Action: I sit down at the table.
 Result: Something else.
@@ -136,27 +170,101 @@ Result: Start a fight.
 Action: I talk to John.
 Result: Start a conversation.
 
+Action: I stop talking to Mary.
+Result: End a conversation.
+
 Action: I go there.
 Result: Change the room.
 
 Action: I go to the table.
 Result: Something else.
 
-Action: {input}
+Action: {a}
 Result:'''
         action_type = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0, max_tokens=12)
         action_type = action_type['choices'][0]['text']
-        return [response, action_type]
+        return [response, action_type, a]
     else:
         return [response]
 
+
+def who(a, scene):
+    namedict = {}
+    t = 0.1
+    while True:
+        names = scene.npcs[0].name
+        egs = f'''\n\nStatement: I attack {scene.npcs[0].name}.\nResult: {scene.npcs[0].name}.\n\n'''
+        for i in scene.npcs:
+            namedict.update({i.name: i})
+            if not i == scene.npcs[0]:
+                names = f'{names}, {i.name}'
+                egs = f'''{egs}Statement: I attack {i.name}.\nResult: {i.name}\n\n'''
+        prompt = f'The following analyses in each case who is meant by a statement. Only the following people could ' \
+                 f'be meant. {names}.{egs}Statement: {a}'
+        result = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=t, max_tokens=12)
+        result = result['choices'][0]['text']
+        t = t + 0.1 * (1 - t)
+        if result in namedict.keys():
+            return namedict[result]
+        else:
+            t = t + 0.1 * (1 - t)
+            if t > 0.9:
+                return 'could not find'
+
+
+def where(a, adventure):
+    namedict = {}
+    t = 0.1
+    while True:
+        first = True
+        for i in adventure.major_locations:
+            if i.active:
+                namedict.update({i.name: i})
+                if first:
+                    first = False
+                    names = adventure.major_locations[0].name
+                    egs = f'''\n\nStatement: I go to {i.name}\nResult {i.name}'''
+                else:
+                    names = f'{names}, {i.name}'
+                    egs = f'''{egs}\n\nStatement: I go to {i.name}\nResult {i.name}.'''
+
+        prompt = f'The following analyses in each case to where a person leaves. Only the following places could be ' \
+                 f'meant. {names}, somewhere else.{egs}\n\nStatement: {a} '
+        result = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=t, max_tokens=18)
+        result = result['choices'][0]['text']
+        t = t + 0.1 * (1 - t)
+        if result in namedict.keys():
+            return namedict[result]
+        else:
+            t = t + 0.1 * (1 - t)
+            if t > 0.9:
+                return 'could not find'
+
+
 class NPC:
-    def __init__(self, name, hostile=False, conditions=None):
+    def __init__(self, name, hostile=False, conditions=None, description=None):
         self.name = name
         self.hostile = hostile
         self.conditions = conditions
         self.active = None
+        self.description = description
+        self.prompt = f'The following is a conversation between {self.name} and a person. {self.description}\n\nPerson: '
+        # Proper grammar and Spelling! Ends with "."; Includes the secrets and how he talks about them.
         check_active(self)
+
+    def talk(self, a=None):
+        if a is None:
+            self.prompt = f'The following is a conversation between {self.name} and a person. {self.description}\n\n{self.name}: '
+        else:
+            self.prompt = f'{self.prompt}{a}\n{self.name}: '
+        response = openai.Completion.create(model="text-davinci-002", prompt=self.prompt, temperature=0.8,
+                                            max_tokens=150)
+        response = response['choices'][0]['text']
+        self.prompt = f'{self.prompt}{response}\n\nPerson: '
+        return response
+
+    def fight(self, a=None):
+        return f'{self.name} does not want to fight you.'
 
 
 class LOCATION:
@@ -164,7 +272,20 @@ class LOCATION:
         self.name = name
         self.active = None
         self.conditions = conditions
+        self.prompt = ''
         check_active(self)
+
+    def describe(self, a=None):
+        if a is None:
+            self.prompt = f'The roomAI describes a room and answers questions about it. The room is a {self.name}.\n' \
+                          f'\nPerson: What do I see?\nRoomAI: '
+        else:
+            self.prompt = f'{self.prompt}{a}\nRoomAI: '
+        response = openai.Completion.create(model="text-davinci-002", prompt=self.prompt, temperature=0.6,
+                                            max_tokens=256)
+        response = response['choices'][0]['text']
+        self.prompt = f'{self.prompt}{response}\n\nPerson: '
+        return response
 
 
 class SECRET:
