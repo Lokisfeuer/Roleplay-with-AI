@@ -3,28 +3,38 @@
 # an intelligent adventure writer.
 # Every Scene Type intelligent interpreter
 # a classifier that will differ between in-scene texts and out-of-scene commands.
-# Something that finds out if secret have been told.
-
-
+# Something that finds out if secrets have been told.
 
 
 import openai
 import math
 import random
 import classifier
+import os
 
+# openai.api_key = os.getenv('OPENAI_API_KEY')
 openai.api_key = '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'
 
 
 def main():
+    print('1st Test: An ever changing test dialogue:')
     prompt = '''The following is a dialogue between a pair of star crossed lovers.'''
-    response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0, max_tokens=100)
+    response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=1, max_tokens=100)
     response = response['choices'][0]['text']
     print(response)
-    print(classifier.classify('I go into the room'))
-    # play_mumsadventure()
+    print('End of first test.')
+    print('2nd Test: classification of input.')
+    response = input('')
+    response = classifier.classify(response)
+    response = response['choices'][0]['text']
+    print(response)
+    print('End of second test.')
 
-def play_mumsadventure():
+    # play_family_adventure()
+    #
+
+
+def play_family_adventure():
     thede = NPC(name='thede')
     sophie = NPC(name='sophie')
     mama = NPC(name='mama', hostile=True)
