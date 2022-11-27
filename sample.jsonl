@@ -1,7 +1,13 @@
-{"prompt": "What do I see?\n\n###\n\n", "completion": " Info question###"}
-{"prompt": "What do I hear?\n\n###\n\n", "completion": " Info question###"}
-{"prompt": "How does it look?\n\n###\n\n", "completion": " Info question###"}
-{"prompt": "Do I feel anything?\n\n###\n\n", "completion": " Info question###"}
+{"prompt": "What do I see?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "What do I hear?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "How does it look?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "Do I feel anything?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I go to the table.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I sit down.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I light the candles.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I go to the corner of the room.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I play the game.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I play the piano.\n\n###\n\n", "completion": " action other###"}
 {"prompt": "How are you?\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "I think so too.\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "I think so.\n\n###\n\n", "completion": " action speech###"}

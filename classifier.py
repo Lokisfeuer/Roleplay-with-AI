@@ -58,8 +58,9 @@ def write_file():
         'Swim',
         'Use Magic Device']
     train = []
-    data = {
-        'Info question': ['What do I see?', 'What do I hear?', 'How does it look?', 'Do I feel anything?'],
+    data = {  # Use non-capitalized letters next time!
+        'info question': ['What do I see?', 'What do I hear?', 'How does it look?', 'Do I feel anything?'],
+        'action other': ['I go to the table.', 'I sit down.', 'I light the candles.', 'I go to the corner of the room.', 'I play the game.', 'I play the piano.'],
         'action speech': ['How are you?', 'I think so too.', 'I think so.', 'What have you been doing?', 'I like John.'],
         'action change room': ['I leave the room.', 'I\'m going to the store.', 'I go to the kitchen.', 'I go to the tower'],
         'action start a fight': ['I start a fight.', 'I attack him.', 'I hit Bettina.', 'I slap Albert in the face.'],
@@ -69,17 +70,21 @@ def write_file():
     }
     for i in abilities_pathfinder:
         data[f'action ability {i.lower()}'] = [f'I use {i.lower()}.', f'I try using my ability {i.lower()}.', f'I {i.lower()}.']
+    all_types = []
     for i in data.keys():
+        all_types.append(i)
         for j in data[i]:
             dict = {'prompt': j+'\n\n###\n\n', 'completion': ' '+i+'###'}
             train.append(dict)
+    print(all_types)
     with jsonlines.open("sample.jsonl", "w") as outfile:
         outfile.write_all(train)
 
-# ada:ft-personal-2022-11-27-17-16-21
-#write_file()
+# old fine tuned model: ada:ft-personal-2022-11-27-17-16-21
+write_file()
 
 def classify(a):
+    # type "Info question" starts accidentally with a capital letter.
     prompt = f'{a}\n\n###\n\n'
     response = openai.Completion.create(model="ada:ft-personal-2022-11-27-17-16-21", prompt=prompt, temperature=0, max_tokens=12, stop="###")
     return response

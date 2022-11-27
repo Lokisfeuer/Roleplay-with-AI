@@ -1,0 +1,5 @@
+{"prompt": "Could you please tell me the right way to the church?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I look out the window.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "Who the hell are you?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I leave the room.\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I open the door and enter\n\n###\n\n", "completion": " action change room###"}
