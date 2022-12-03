@@ -3,3 +3,23 @@
 {"prompt": "Who the hell are you?\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "I leave the room.\n\n###\n\n", "completion": " action change room###"}
 {"prompt": "I open the door and enter\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I break the window.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I sit down next to Mama\n\n###\n\n", "completion": " action other###"}
+{"prompt": "What else is in the room?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "How does the coffee table look?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "What colour has the couch?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "What else do I see?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "How does the coffee table look?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "What kind of utensils are there?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I take one of the knives.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I talk to thede\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "I talk to my father.\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "How are you doing dad?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "How does the room look?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I talk to Sophie\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "How does it look?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "Where exactly are Sophie and Papa\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I want to burn down the room.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I go outside\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I go out of the room.\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I sit down next to the father.\n\n###\n\n", "completion": " action other###"}
