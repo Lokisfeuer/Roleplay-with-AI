@@ -1,8 +1,9 @@
 def main():
     def inner():
         print('Inner')
-        return 10
+        return x
 
+    x = 10
     test = inner
     return test
 

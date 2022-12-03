@@ -4,3 +4,4 @@
 {"prompt": "Talk to Mama\n\n###\n\n", "completion": " action conversation###"}
 {"prompt": "Please, I just have a short Question.\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "I say Hello!\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "I saw the lighthouse on that map.\n\n###\n\n", "completion": " action speech###"}

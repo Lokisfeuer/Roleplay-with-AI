@@ -21,7 +21,8 @@ openai.api_key = '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'
 def main():
     # write_to_json()
     # test()
-    play(adventure_structure.the_drowned_aboleth())
+    adventure, conditions = adventure_structure.the_drowned_aboleth()
+    play(adventure, conditions=conditions)
     pass
 
 
@@ -91,6 +92,7 @@ def play(adventure, conditions=None, analyse=True):
     if conditions is None:
         conditions = [None, [None]]
     former_scenes = []
+    a = None
     running_adventure = True
     while running_adventure:
         scene = adventure_structure.get_next_scene(
@@ -105,16 +107,20 @@ def play(adventure, conditions=None, analyse=True):
             print('amount of secrets: ' + str(len(scene.secrets)))
             for j in scene.secrets:
                 print('Secret: ' + j.name)
+        object_of_interest = scene.location
+        running_scene = True
         params = {'object_of_interest': object_of_interest, 'scene': scene, 'adventure': adventure, 'a': a,
                   'running_scene': running_scene, 'conditions': conditions, 'running_adventure': running_adventure}
         params = check_for_trigger(params)
-        for i in params.keys():
-            eval(f'{i} = params[i]')
-        former_scenes.append(scene)
+        object_of_interest = params["object_of_interest"]
+        scene = params["scene"]
+        adventure = params["adventure"]
+        a = params["a"]
+        running_scene = params["running_scene"]
+        conditions = params["conditions"]
+        running_adventure = params["running_adventure"]
         description = scene.location.describe(npcs=scene.npcs)
         print(description)
-        object_of_interest = scene.location
-        running_scene = True
         while running_scene:
             a = input('<please enter:>')
             sort = classify(a, analyse)
@@ -249,9 +255,23 @@ def info_question(**kwargs):
 
 def action_other(**kwargs):
     if isinstance(kwargs['object_of_interest'], adventure_structure.NPC):
-        print(kwargs['object_of_interest'].talk(kwargs['a']))  # or fight?
+        secrets = []
+        for i in kwargs['scene'].secrets:
+            if kwargs['object_of_interest'] in i.where_to_find:
+                if random.random() > 0.3:
+                    secrets.append(i)
+                    i.found = True
+                    print(f'(Devtool) You find out the following secret: {i.name}')
+        print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))  # or fight?
     elif isinstance(kwargs['object_of_interest'], adventure_structure.LOCATION):
-        print(kwargs['object_of_interest'].describe(kwargs['a']))
+        secrets = []
+        for i in kwargs['scene'].secrets:
+            if kwargs['object_of_interest'] in i.where_to_find:
+                if random.random() > 0.3:
+                    secrets.append(i)
+                    i.found = True
+                    print(f'(Devtool) You find out the following secret: {i.name}')
+        print(kwargs['object_of_interest'].describe(kwargs['a'], secrets=secrets))
     else:
         print('Error action_other')
     return kwargs
@@ -264,7 +284,14 @@ def action_speech(**kwargs):
             person = random.choice(kwargs['scene'].npcs)
         print(f'You are talking to {person}.')
         kwargs['object_of_interest'] = person
-    print(kwargs['object_of_interest'].talk(kwargs['a']))
+    secrets = []
+    for i in kwargs['scene'].secrets:
+        if kwargs['object_of_interest'] in i.where_to_find:
+            if random.random() > 0.3:
+                secrets.append(i)
+                i.found = True
+                print(f'(Devtool) You find out the following secret: {i.name}')
+    print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))
     return kwargs
 
 
@@ -290,7 +317,14 @@ def action_conversation(**kwargs):
         person = random.choice(kwargs['scene'].npcs)
     print(f'You are talking to {person.name}.')
     kwargs['object_of_interest'] = person
-    print(kwargs['object_of_interest'].talk(kwargs['a']))
+    secrets = []
+    for i in kwargs['scene'].secrets:
+        if kwargs['object_of_interest'] in i.where_to_find:
+            if random.random() > 0.3:
+                secrets.append(i)
+                i.found = True
+                print(f'(Devtool) You find out the following secret: {i.name}')
+    print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))
     return kwargs
 
 

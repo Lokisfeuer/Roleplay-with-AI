@@ -107,23 +107,23 @@ def the_drowned_aboleth():
     captain = NPC(name='Captain',
                   description='The captain wears a big captain\'s hat. In one hand he holds a saber and '
                               'in the other one he carries a shotgun.',
-                  hostile=True, conditions=[sec_false])  # never active
+                  hostile=True, conditions=[{sec_false: True}])  # never active
     piet = NPC(name='Piet', description='Piet is an elderly sailor on the Algebra.')
     timmy = NPC(name='Timmy', description='Timmy is the kitchen boy on the Algebra. He has a friendly character.'
                                           'willing to do anyone a favor. He is a little scared of the captain.')
     matthews = NPC(name='Matthews Joachim Karl von Phisa',
                    description='Matthews Joachim Karl von Phisa is the oldest son of the Duke of Phisa. He is a '
                                'little arrogant and self-pitiful.',
-                   conditions=[sec_false])
+                   conditions=[{sec_false: True}])
     robber = NPC(name='Robber', description='The robber is an intimidating figure with a knife in one hand.',
-                 conditions=[sec_false])
+                 conditions=[{sec_false: True}])
     sec_h = SECRET(name='Guards relieved.', where_to_find=[])
     steve = NPC(name='Steve',
                 description='Steve is guarding the Algebra. He takes care and allows nobody to pass through.',
-                conditions=[sec_h])
+                conditions=[{sec_h: True}])
     tom = NPC(name='Tom',
               description='Tom is protecting the Algebra. He takes care and allows nobody to pass through.',
-              conditions=[sec_h])
+              conditions=[{sec_h: True}])
 
     streets = LOCATION(name='streets', description='These are the dark streets of the village. The local tavern "The '
                                                    'drowned aboleth" can be found here.')
@@ -137,24 +137,24 @@ def the_drowned_aboleth():
     lighthouse = LOCATION(name='lighthouse',
                           description='The old lighthouse was abandoned years ago. There hasn\'t been a lighthouse'
                                       'keeper for ages.',
-                          conditions=[sec_lighthouse])
+                          conditions=[{sec_lighthouse: True}])
     sec_bay = SECRET(name='There is a bay where the crew of the Algebra stores their goods.',
                      where_to_find=[john, jack, isabella, greg, piet, timmy, steve, tom, lighthouse])
     # check sec_bay [lighthouse] during testing.
     bay = LOCATION(name='bay', description='At this bay the crew of the Algebra is storing their smuggled goods. The '
-                                           'bay is full with more or less valuable treasury.', conditions=[sec_bay])
+                                           'bay is full with more or less valuable treasury.', conditions=[{sec_bay: True}])
     pier = LOCATION(name='pier', description='There is only a single vessel in the pier. It is the Algebra, '
                                              'a big sailing vessel with three masts. Two guards are standing in front '
                                              'of it, allowing nobody to enter who is not part of the crew.')
     ship = LOCATION(name='Algebra',
                     description='The Algebra is a big sailing vessel. It\'s got three masts. On the main deck is a'
                                 'huge steering wheel and a hatch to go below deck.',
-                    conditions=[sec_h])
+                    conditions=[{sec_h: True}])
     inside_ship = LOCATION(name='inner deck of the Algebra', description='Inside the Algebra are multiple smaller '
                                                                          'rooms, including a galley, a mess hall, '
                                                                          'a medical bay, a weapons storage room and '
                                                                          'the crew quarters as well as one cell with '
-                                                                         'a prisoner.', conditions=[sec_h])
+                                                                         'a prisoner.', conditions=[{sec_h: True}])
 
     # Story-secrets:
     sec_a = SECRET(name='There is a message given to the players saying that Matthews is being held on the Algebra.',
@@ -318,7 +318,7 @@ class LOCATION:
                           f'\n\nPerson: What do I see at the location?\nLocationAI: '
         else:
             self.prompt = f'{self.prompt}{a}\nLocationAI: '
-        response = openai.Completion.create(model="text-davinci-002", prompt=self.prompt, temperature=0.6,
+        response = openai.Completion.create(model="text-davinci-002", prompt=self.prompt, temperature=0.8,
                                             max_tokens=256)
         response = response['choices'][0]['text']
         self.prompt = f'{self.prompt}{response}\n\nPerson: '
