@@ -5,3 +5,11 @@
 {"prompt": "Please, I just have a short Question.\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "I say Hello!\n\n###\n\n", "completion": " action conversation###"}
 {"prompt": "I saw the lighthouse on that map.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I let the robber alone.\n\n###\n\n", "completion": " action end a conversation###"}
+{"prompt": "I give you my money in exchange for your secrets.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I go to the robber.\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "I want to keep my life!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I leave the robber alone.\n\n###\n\n", "completion": " action end a conversation###"}
+{"prompt": "But maybe you know some helpful secrets?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Yeah the weather has been great. I was out on the beach yesterday.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I leave my conversation with Jack.\n\n###\n\n", "completion": " action end a conversation###"}

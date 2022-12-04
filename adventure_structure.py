@@ -56,7 +56,7 @@ def the_drowned_aboleth():
                                 names = f' and {i.name}'
                             else:
                                 names = f', {i.name}{names}'
-                            sailors_helping = sailors_helping+1
+                            sailors_helping = sailors_helping + 1
                 if sailors_helping > 1:
                     print(f'{names[1:]} could relieve the guards and let you on bord of the Algebra.')
                     if input('Should they do so? [Y/n]').lower()[0] == 'y':
@@ -91,6 +91,11 @@ def the_drowned_aboleth():
             if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
                 sailors_help[piet].found = True
         return x
+
+    def secret_message(x):
+        if sec_a.found:
+            print('You find a message in your pocket. Somebody must have smuggled it into there. It says the following:')
+
 
     sec_false = SECRET(name='false', where_to_find=[])
 
@@ -142,7 +147,8 @@ def the_drowned_aboleth():
                      where_to_find=[john, jack, isabella, greg, piet, timmy, steve, tom, lighthouse])
     # check sec_bay [lighthouse] during testing.
     bay = LOCATION(name='bay', description='At this bay the crew of the Algebra is storing their smuggled goods. The '
-                                           'bay is full with more or less valuable treasury.', conditions=[{sec_bay: True}])
+                                           'bay is full with more or less valuable treasury.',
+                   conditions=[{sec_bay: True}])
     pier = LOCATION(name='pier', description='There is only a single vessel in the pier. It is the Algebra, '
                                              'a big sailing vessel with three masts. Two guards are standing in front '
                                              'of it, allowing nobody to enter who is not part of the crew.')
@@ -178,7 +184,8 @@ def the_drowned_aboleth():
     sailors_help.update({john: SECRET(name=f'{john.name} is willing to help the player.', where_to_find=[])})
     sailors_help.update({greg: SECRET(name=f'{greg.name} is willing to help the player.', where_to_find=[])})
     sailors_help.update({timmy: SECRET(name=f'{timmy.name} is willing to help the player.', where_to_find=[timmy])})
-    sailors_help.update({michael: SECRET(name=f'{michael.name} is willing to help the player.', where_to_find=[michael])})
+    sailors_help.update(
+        {michael: SECRET(name=f'{michael.name} is willing to help the player.', where_to_find=[michael])})
     sailors_help.update({piet: SECRET(name=f'{piet.name} is willing to help the player.', where_to_find=[])})
     # other_secrets:
     # sec_h = SECRET(name='Guards relieved.', where_to_find=[])
@@ -200,13 +207,15 @@ def the_drowned_aboleth():
     npcs = [john, jack, isabella, michael, andrea, greg, captain, piet, timmy, matthews, robber, steve, tom]
     locations = [streets, tavern, lighthouse, bay, ship, inside_ship]
     secrets = [sec_a, sec_b, sec_c, sec_d, sec_e, sec_f, sec_g, sec_h, sec_i, sec_j, sec_k, sec_won, sec_false,
-               sec_lighthouse, sec_bay].extend(sailors_help.values())
+               sec_lighthouse, sec_bay]
+    secrets.extend(sailors_help.values())
     trigger = [trig_a, trig_b, trig_c, trig_d, loveletter, money, alcohol]
     starting_conditions = [streets, [robber]]
 
-    the_drowned_aboleth = ADVENTURE(major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger=trigger,
-                                    actionrelevance=0)
-    return the_drowned_aboleth, starting_conditions
+    adventure = ADVENTURE(major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger=trigger,
+                          actionrelevance=0)
+    return adventure, starting_conditions
+
 
 def play_family_adventure():
     thede = NPC(name='thede')
@@ -266,6 +275,7 @@ class NPC:
         check_active(self)
 
     def talk(self, a, secrets=None):
+        # check prompt propperly
         if secrets is None:
             prompt = self.prompt + '\n\nPerson: '
         else:
@@ -343,11 +353,11 @@ class SECRET:
         if description is None:
             self.description = {}
             for i in where_to_find:
-                self.description.update({i: ''})
+                self.description.update({i: self.name})
         else:
             for i in where_to_find:
                 if i not in description.keys():
-                    self.description.update({i: ''})
+                    self.description.update({i: self.name})
         check_active(self)
 
 
@@ -559,7 +569,7 @@ def powerset(s):
 def evaluate_getinputs(former_scenes, adventure):  # former_scenes[0] is the oldest scene. new ones are being appended.
     # hope & fear
     # difficulty
-    # action (Trägheit?)
+    # action (Inertia?)
     type_to_number = {'fight': 1, 'social interaction': 0, 'exploration': -1}
     try:
         x = len(former_scenes)

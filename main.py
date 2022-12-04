@@ -19,7 +19,7 @@ openai.api_key = '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'
 
 
 def main():
-    # write_to_json()
+    # write_to_json()  # Error!
     # test()
     adventure, conditions = adventure_structure.the_drowned_aboleth()
     play(adventure, conditions=conditions)
@@ -27,6 +27,7 @@ def main():
 
 
 def write_to_json():
+    # Does not work!!
     path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
     documents = []
     for i in os.listdir(path):
@@ -215,13 +216,20 @@ def who(a, scene):
         names.update({i.name: i})
         names_str = f'{names_str}, {i.name}'
     prompt = f'Who of the following people is meant by the statement? It could be {names}\n\nStatement: {a}\nPerson: '
-    response = openai.Completion.create(model='text-davinci-002', prompt=prompt, temperature=0, max_tokens=12,
-                                        stop="###")
-    response = response['choices'][0]['text']
+    response = 'As this doesn\'t work anyways, why waste resources?'
+    # response = openai.Completion.create(model='text-davinci-002', prompt=prompt, temperature=0, max_tokens=12,
+    #                                     stop="###")
+    # response = response['choices'][0]['text']
     if response in names.keys():
         return names[response]
     else:
-        return 'could not find'
+        print('Who are you talking to?')
+        print(names.keys())
+        response = input('Please copypaste who you  are talking to or leave empty to just talk to someone.')
+        if response in names.keys():
+            return names[response]
+        else:
+            return 'could not find'
 
 
 def where(a, adventure):
@@ -233,12 +241,19 @@ def where(a, adventure):
             names_str = f'{names_str}, {i.name}'
     names_str = names_str[2:]
     prompt = f'Where does the person go to? It could be each of the following: {names_str}\n\nPerson: {a}\nLocation: '
-    response = openai.Completion.create(model='text-davinci-002', prompt=prompt, temperature=0, max_tokens=18)
-    response = response['choices'][0]['text']
+    response = 'As this doesn\'t work anyways why waste resources.'
+    # response = openai.Completion.create(model='text-davinci-002', prompt=prompt, temperature=0, max_tokens=18)
+    # response = response['choices'][0]['text']
     if response in names.keys():
         return names[response]
     else:
-        return 'could not find'
+        print('Where are you going?')
+        print(names.keys())
+        response = input('Please copypaste where you are going or leave empty to just go somewhere.')
+        if response in names.keys():
+            return names[response]
+        else:
+            return 'could not find'
 
 
 # Now come all the type functions:
@@ -258,19 +273,23 @@ def action_other(**kwargs):
         secrets = []
         for i in kwargs['scene'].secrets:
             if kwargs['object_of_interest'] in i.where_to_find:
-                if random.random() > 0.3:
+                if random.random() > 0:
                     secrets.append(i)
                     i.found = True
                     print(f'(Devtool) You find out the following secret: {i.name}')
+        if len(secrets) == 0:
+            secrets = None
         print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))  # or fight?
     elif isinstance(kwargs['object_of_interest'], adventure_structure.LOCATION):
         secrets = []
         for i in kwargs['scene'].secrets:
             if kwargs['object_of_interest'] in i.where_to_find:
-                if random.random() > 0.3:
+                if random.random() > 0:
                     secrets.append(i)
                     i.found = True
                     print(f'(Devtool) You find out the following secret: {i.name}')
+        if len(secrets) == 0:
+            secrets = None
         print(kwargs['object_of_interest'].describe(kwargs['a'], secrets=secrets))
     else:
         print('Error action_other')
@@ -287,16 +306,19 @@ def action_speech(**kwargs):
     secrets = []
     for i in kwargs['scene'].secrets:
         if kwargs['object_of_interest'] in i.where_to_find:
-            if random.random() > 0.3:
+            if random.random() > 0:
                 secrets.append(i)
                 i.found = True
                 print(f'(Devtool) You find out the following secret: {i.name}')
+    if len(secrets) == 0:
+        secrets = None
     print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))
     return kwargs
 
 
-def action_change_room(**kwargs):  # proper kwargs implementation is needed!
+def action_change_room(**kwargs):
     kwargs['conditions'] = [where(kwargs['a'], kwargs['adventure']), [None]]
+    # NPC conditions hould explicitly exclude the ones from the last scene.
     kwargs['running_scene'] = False
     return kwargs
 
@@ -320,16 +342,21 @@ def action_conversation(**kwargs):
     secrets = []
     for i in kwargs['scene'].secrets:
         if kwargs['object_of_interest'] in i.where_to_find:
-            if random.random() > 0.3:
+            if random.random() > 0:
                 secrets.append(i)
                 i.found = True
                 print(f'(Devtool) You find out the following secret: {i.name}')
+    if len(secrets) == 0:
+        secrets = None
     print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))
     return kwargs
 
 
 def action_end_a_conversation(**kwargs):
-    print('The ability <action end a conversation> is not implemented yet.')
+    scene = kwargs['scene']
+    ob_of_in = kwargs['object_of_interest']
+    print(f'You ended your conversation with {ob_of_in.name} and are now again in {scene.location.name}')
+    kwargs['object_of_interest'] = scene.location
     return kwargs
 
 
