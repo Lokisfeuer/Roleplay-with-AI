@@ -17,7 +17,7 @@ def write_to_json():
         file_dict = {}
         with jsonlines.open(i, 'r') as reader:
             for j in reader:
-                if i.startswith('input'):
+                if i.startswith('input') or i == 'sample.jsonl':
                     file_dict.update({j['prompt']: j['completion']})
                 else:
                     file_dict.update(j)
