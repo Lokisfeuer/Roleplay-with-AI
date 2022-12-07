@@ -13,3 +13,31 @@
 {"prompt": "But maybe you know some helpful secrets?\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "Yeah the weather has been great. I was out on the beach yesterday.\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "I leave my conversation with Jack.\n\n###\n\n", "completion": " action end a conversation###"}
+{"prompt": "\n\n###\n\n", "completion": " action other###"}
+{"prompt": "Hey man, how's it going?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I leave the conversation with John.\n\n###\n\n", "completion": " action end a conversation###"}
+{"prompt": "I kill the robber.\n\n###\n\n", "completion": " action start a fight###"}
+{"prompt": "Who else was here again?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I need a way to get on the Algebra.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I need to find someone ther.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Its just a ship.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Why is it dangerous?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Well I really need to find it!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "This doesn't lead to anything.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Where could I meet them?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I leave Jack alone.\n\n###\n\n", "completion": " action end a conversation###"}
+{"prompt": " what is your name?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " do you wanna marry me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I can do Kunfu\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "shut up\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "then hurt me\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Is John here?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "Is isabella here?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "tavern\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "Ok i will break up, i hate you now!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Ok but why dont you care about me braking up with you\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "You are not the man i used to love!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "With who are you married?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Tell me other secrets!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "ok\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "How old are you?\n\n###\n\n", "completion": " action speech###"}

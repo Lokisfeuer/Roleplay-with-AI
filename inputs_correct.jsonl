@@ -94,3 +94,107 @@
 {"prompt": "What do I see?\n\n###\n\n", "completion": " info question###"}
 {"prompt": "I look at the map.\n\n###\n\n", "completion": " action other###"}
 {"prompt": "I look around in the tavern.\n\n###\n\n", "completion": " action other###"}
+{"prompt": " walk past the robber.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "then i turn around and slap the robber in the face.\n\n###\n\n", "completion": " action start a fight###"}
+{"prompt": "How does it look like\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I run away and hide in the woods outside the city\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I enter the tavern.\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I enter the village.\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I talk to John.\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "Have you ever heard of a girl called Isabella?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I heard you kinda like her.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you like Isabella?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Nice to hear.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Are you in love with Isabella?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I look at the map.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "Who is in the tavern with me?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I talk to them.\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "Do you need any kind of help concerning Isabella?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Sure no problem!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Have you ever heard of the duke of Philsa? I heard his son has gone missing.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Well I am looking for him.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Can you tell me anything about the area here?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "\tThat is really useful, thanks\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you know anythig else about the Algebra?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Everything there is to know!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "John, I meant the ship called Algebra.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I enter the tavern.\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I talk to Timmy.\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "Hey Timmy.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I was wondering whether you could tell me anything about the Algebra?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Thanks, super nice of you!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I stop talking to Timmy.\n\n###\n\n", "completion": " action end a conversation###"}
+{"prompt": "I talk to them.\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "Hey Jack\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Maybe you know something about the crew of the Algebra?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Where could I meet the crew of the Algebra?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you know anything about the local area here?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Thank you so much Jack!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " i take away his knife and point it at him\n\n###\n\n", "completion": " action start a fight###"}
+{"prompt": " What now?\n\n###\n\n", "completion": " info question###"}
+{"prompt": " appreach the tavern\n\n###\n\n", "completion": " action change room###"}
+{"prompt": " I look at the map more closely\n\n###\n\n", "completion": " action other###"}
+{"prompt": " Look around\n\n###\n\n", "completion": " action other###"}
+{"prompt": " Search for Matthews Joseph Charles of Philsa\n\n###\n\n", "completion": " action other###"}
+{"prompt": " Hello John\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " How are you?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Im prefectly fine. Do you like math?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Do you know the theorem of pythagoras?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Can you please explain it to me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Can you please explain me the theorem of pythagoras?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " I hate you\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " because you like math\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Why?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "Why is math important to you?\n\n###\n\n", "completion": " info question###"}
+{"prompt": " I love you\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Who is Isabella?\n\n###\n\n", "completion": " info question###"}
+{"prompt": " Do you love her?\n\n###\n\n", "completion": " info question###"}
+{"prompt": " Do you love isabella?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Do you want to marry isabella?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " i like you at first but now i dont.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Because you love isabella and me. But there can only be one women in your life.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Im done talking to you\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": " You are weird\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Yes of course you are\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " i wanna finde Matthew\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " How old are you\n\n###\n\n", "completion": " info question###"}
+{"prompt": "where are you from?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " I dont like England.\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Its rainy in england.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "I enter the tavern.-\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "I look at the map.\n\n###\n\n", "completion": " action other###"}
+{"prompt": "Who else is in the room with me?\n\n###\n\n", "completion": " info question###"}
+{"prompt": "I talk to John.\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": " Hello\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "No\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "slap him\n\n###\n\n", "completion": " action start a fight###"}
+{"prompt": "shut up!\n\n###\n\n", "completion": " action end a conversation###"}
+{"prompt": "I talk to Robber\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "i hate you\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " then hurt me\n\n###\n\n", "completion": " action start a fight###"}
+{"prompt": " take my money\n\n###\n\n", "completion": " action change room###"}
+{"prompt": "i want to talk to John\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": " ok sad\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " I want to go to the taver\n\n###\n\n", "completion": " action change room###"}
+{"prompt": " I want to talk to Iisabella\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "Hello Piet\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you want liquor\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " Which kind of liquor\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you like me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I want to talk to Piet\n\n###\n\n", "completion": " action conversation###"}
+{"prompt": "Hello piet i love liquor\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you love me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Ohhh i love you too\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "But do you love math?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Oh i love math too\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you want to marry me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Why dont you wanna marry me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "excuse me? That was rude\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " But do you really love me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "But you did\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you love me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Do you want to marry me?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "I am one of these few people?\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Tell me your secrets!\n\n###\n\n", "completion": " action speech###"}
+{"prompt": "Tell me the other secrets!\n\n###\n\n", "completion": " action other secrets###"}
+{"prompt": "Tell me something about yourself?\n\n###\n\n", "completion": " action speech###"}

@@ -1,2 +1,5 @@
 {"prompt": "What was your name again?\n\n###\n\n", "completion": " action speech###"}
 {"prompt": "I look out the window.\n\n###\n\n", "completion": " action change room###"}
+{"prompt": ".\n\n###\n\n", "completion": " action speech###"}
+{"prompt": " The theorem of pythagoras\n\n###\n\n", "completion": " action theorem of pythagoras###"}
+{"prompt": "I want to talk to Robber\n\n###\n\n", "completion": " action conversation###"}

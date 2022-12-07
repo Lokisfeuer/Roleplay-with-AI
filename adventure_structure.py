@@ -21,7 +21,7 @@ def the_drowned_aboleth():
                 x['conditions'] = [ship, [captain]]
             else:
                 if 'sort' in x.keys():
-                    print('Matthews Joachim Karl von Phisa is bound and gagged lying in the prison cell.')
+                    print('Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.')
                     answer = input('Do you want to free Matthews? [Y/n]').lower()
                     if answer[0] == 'y':
                         print('You free Matthews.')
@@ -90,11 +90,28 @@ def the_drowned_aboleth():
             print('You can get Piet a bottle of liquor.')
             if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
                 sailors_help[piet].found = True
+            x['adventure'].trigger.remove(alcohol)
         return x
 
     def secret_message(x):
         if sec_a.found:
-            print('You find a message in your pocket. Somebody must have smuggled it into there. It says the following:')
+            print('You find a message in your pocket. Somebody must have smuggled it into there. It says the '
+                  'following:\nI, Matthews Joseph Charles of Philsa, son of the duke of Philsa am being held against '
+                  'my will on the Algebra. My father would be willing to pay great amounts for my rescue. Please help '
+                  'me!!!')
+            x['adventure'].trigger.remove(secret_message)
+        return x
+
+    def prolouge(x):
+        print(f'You, as brave adventurer, have been hired by the very rich Duke of Philsa to find his kidnapped son. '
+              f'So you set out to find the kidnappers and tracked them to the small port town of Abolia. You have now '
+              f'arrived there in the late evening. It is a dark night and the streets are almost empty. Only one ship '
+              f'with the lettering "Algebra" lies at anchor. You head towards the only lighted house - an inn called '
+              f'"The drowned Aboleth". As you walk towards the inn, a hooded figure suddenly get in your way. He '
+              f'pulls out a knife and points it at the leather pouch containing 100 gold coins that the Baron gave '
+              f'you as a deposit. He says: "Give me the money, if you value your lives".')
+        x['adventure'].trigger.remove(prolouge)
+        return x
 
 
     sec_false = SECRET(name='false', where_to_find=[])
@@ -116,8 +133,8 @@ def the_drowned_aboleth():
     piet = NPC(name='Piet', description='Piet is an elderly sailor on the Algebra.')
     timmy = NPC(name='Timmy', description='Timmy is the kitchen boy on the Algebra. He has a friendly character.'
                                           'willing to do anyone a favor. He is a little scared of the captain.')
-    matthews = NPC(name='Matthews Joachim Karl von Phisa',
-                   description='Matthews Joachim Karl von Phisa is the oldest son of the Duke of Phisa. He is a '
+    matthews = NPC(name='Matthews Joachim Karl von Philsa',
+                   description='Matthews Joachim Karl von Philsa is the oldest son of the Duke of Philsa. He is a '
                                'little arrogant and self-pitiful.',
                    conditions=[{sec_false: True}])
     robber = NPC(name='Robber', description='The robber is an intimidating figure with a knife in one hand.',
@@ -203,13 +220,15 @@ def the_drowned_aboleth():
     loveletter = TRIGGER(when_triggered=[isabella], function=loveletter)
     money = TRIGGER(when_triggered=[greg], function=money)
     alcohol = TRIGGER(when_triggered=[piet], function=alcohol)
+    secret_message = TRIGGER(when_triggered=[tavern], function=secret_message)
+    prolouge = TRIGGER(when_triggered=[streets], function=prolouge)
 
     npcs = [john, jack, isabella, michael, andrea, greg, captain, piet, timmy, matthews, robber, steve, tom]
     locations = [streets, tavern, lighthouse, bay, ship, inside_ship]
     secrets = [sec_a, sec_b, sec_c, sec_d, sec_e, sec_f, sec_g, sec_h, sec_i, sec_j, sec_k, sec_won, sec_false,
                sec_lighthouse, sec_bay]
     secrets.extend(sailors_help.values())
-    trigger = [trig_a, trig_b, trig_c, trig_d, loveletter, money, alcohol]
+    trigger = [trig_a, trig_b, trig_c, trig_d, loveletter, money, alcohol, secret_message, prolouge]
     starting_conditions = [streets, [robber]]
 
     adventure = ADVENTURE(major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger=trigger,
@@ -282,13 +301,14 @@ class NPC:
             secret_text = ''
             for i in secrets:
                 secret_text = f'{secret_text}Secret: {i.description[self]}\n'
-            prompt = f'{self.prompt}{self.name} knows some secrets.\n{secret_text}\nPerson: '
+            prompt = f'{self.prompt}{self.name} knows some secrets and loves to talk about them.' \
+                     f'\n{secret_text}\nPerson: '
             # The single \n before person is correct.
         for i in range(min(len(self.former_inputs), 3)):
             prompt = f'{prompt}{self.former_inputs[i]}\n{self.name}: {self.former_answers[i]}\n\nPerson: '
         prompt = f'{prompt}{a}\n{self.name}: '
         response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0.8,
-                                            max_tokens=150)
+                                            max_tokens=100)
         response = response['choices'][0]['text']
         self.former_inputs.append(a)
         self.former_answers.append(response)
@@ -311,10 +331,12 @@ class LOCATION:
         check_active(self)
 
     def describe(self, a=None, npcs=None, secrets=None):
-        secret_text = ''
+        secret_text = '\nIf someone looks around closely they might find the following secrets:\n'
         if secrets is not None:
             for i in secrets:
                 secret_text = f'{secret_text}{i.description[self]}.'
+        else:
+            secret_text = ''
         if npcs is None:
             npcs = []
             names = ''
@@ -325,7 +347,7 @@ class LOCATION:
         if a is None:
             self.prompt = f'The locationAI describes a location and answers questions about it. The location is a ' \
                           f'{self.name}.{self.description} The following people are at the location: {names}.' \
-                          f'\n\nPerson: What do I see at the location?\nLocationAI: '
+                          f'{secret_text}\n\nPerson: What do I see at the location?\nLocationAI: '
         else:
             self.prompt = f'{self.prompt}{a}\nLocationAI: '
         response = openai.Completion.create(model="text-davinci-002", prompt=self.prompt, temperature=0.8,

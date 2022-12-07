@@ -26,22 +26,7 @@ def main():
     pass
 
 
-def write_to_json():
-    # Does not work!!
-    path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
-    documents = []
-    for i in os.listdir(path):
-        if i.endswith('.jsonl'):
-            documents.append(i)
-    full_dict = {}
-    for i in documents:
-        file_dict = {}
-        with jsonlines.open(i, 'r') as reader:
-            for j in reader:
-                file_dict.update(j)
-        full_dict.update({i[:-6]: file_dict})
-    with open('out.json', 'w') as out_file:
-        json.dump(full_dict, out_file)
+
 
 
 def get_type_list():
@@ -120,7 +105,11 @@ def play(adventure, conditions=None, analyse=True):
         running_scene = params["running_scene"]
         conditions = params["conditions"]
         running_adventure = params["running_adventure"]
-        description = scene.location.describe(npcs=scene.npcs)
+        if len(scene.npcs) == 0:
+            npcs = None
+        else:
+            npcs = scene.npcs
+        description = scene.location.describe(npcs=npcs)
         print(description)
         while running_scene:
             a = input('<please enter:>')
@@ -140,7 +129,7 @@ def play(adventure, conditions=None, analyse=True):
                 conditions = result['conditions']
             else:
                 print('Abilities are not implemented yet.')
-                # with open('out.json', 'r') as f:
+                # with open('data.json', 'r') as f:
                 #    att = f['abilities'][sort]
                 # chance_of_success = 0.5  # chance of success should be dependent on att and player.
         for i in scene.secrets:
@@ -173,7 +162,7 @@ def classify(a, analyse):
                     response = ' ' + response
                     break
             if document == '':
-                document = 'inputs_incorrect.json'
+                document = 'inputs_incorrect.jsonl'
         else:
             document = 'inputs_unknown.jsonl'
     else:
