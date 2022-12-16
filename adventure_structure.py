@@ -103,13 +103,13 @@ def the_drowned_aboleth():
         return x
 
     def prolouge(x):
-        print(f'You, as brave adventurer, have been hired by the very rich Duke of Philsa to find his kidnapped son. '
-              f'So you set out to find the kidnappers and tracked them to the small port town of Abolia. You have now '
-              f'arrived there in the late evening. It is a dark night and the streets are almost empty. Only one ship '
-              f'with the lettering "Algebra" lies at anchor. You head towards the only lighted house - an inn called '
-              f'"The drowned Aboleth". As you walk towards the inn, a hooded figure suddenly get in your way. He '
-              f'pulls out a knife and points it at the leather pouch containing 100 gold coins that the Baron gave '
-              f'you as a deposit. He says: "Give me the money, if you value your lives".')
+        print(f'You, as brave adventurer, have been hired by the very rich Duke of Philsa to find his kidnapped son.\n'
+              f'So you set out to find the kidnappers and tracked them to the small port town of Abolia. You have now\n'
+              f'arrived there in the late evening. It is a dark night and the streets are almost empty. Only one ship\n'
+              f'with the lettering "Algebra" lies at anchor. You head towards the only lighted house - an inn called\n'
+              f'"The drowned Aboleth". As you walk towards the inn, a hooded figure suddenly get in your way. He\n'
+              f'pulls out a knife and points it at the leather pouch containing 100 gold coins that the Baron gave\n'
+              f'you as a deposit. He says: "Give me the money, if you value your life".')
         x['adventure'].trigger.remove(prolouge)
         return x
 
