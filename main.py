@@ -16,6 +16,9 @@ import json
 openai.api_key = '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'
 # model = 'ada:ft-personal-2022-11-27-20-21-30'
 # old fine tuned model = 'ada:ft-personal-2022-11-27-17-16-21'
+# model = ada:ft-personal:input-classifier-2022-12-17-07-32-32
+# wheremodel = curie:ft-personal:where-2022-12-17-23-05-15
+# whomodel = curie:ft-personal:who-2022-12-17-23-11-02
 
 
 def main():
@@ -24,9 +27,6 @@ def main():
     adventure, conditions = adventure_structure.the_drowned_aboleth()
     play(adventure, conditions=conditions)
     pass
-
-
-
 
 
 def get_type_list():
