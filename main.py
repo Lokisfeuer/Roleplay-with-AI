@@ -4,13 +4,17 @@
 # Every Scene Type intelligent interpreter
 # Something that finds out if secrets have been told.
 
+# next steps:
+# commands: take back, inventory and secrets, hint, help, /mastertype a, describe scene (analyse)
+# 1 and only 1 input spot.
+# implement the new models
 
 import openai
 import random
-import jsonlines
 import adventure_structure
 import os
 import json
+import jsonlines
 
 # openai.api_key = os.getenv('OPENAI_API_KEY')
 openai.api_key = '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'
@@ -25,192 +29,182 @@ def main():
     # write_to_json()  # Error!
     # test()
     adventure, conditions = adventure_structure.the_drowned_aboleth()
-    play(adventure, conditions=conditions)
+    GAME(adventure=adventure, conditions=conditions).play()
     pass
 
 
-def get_type_list():
-    type_list = []
-    lines = {}
-    with jsonlines.open('master_types.jsonl', 'r') as master_types:
-        for line in master_types.iter(type=dict):
-            lines.update(line)
-    for i in lines.keys():
-        type_list.append(i.lower())
-    lines = {}
-    with jsonlines.open('abilities.jsonl', 'r') as abilities:
-        for line in abilities.iter(type=dict):
-            lines.update(line)
-    for i in lines.keys():
-        type_list.append('action ability '+i.lower())
-    return type_list
-
-
-def write_master_types():
-    master_types = {
-        'info question': info_question, 'action other': action_other, 'action speech': action_speech,
-        'action change room': action_change_room, 'action start a fight': action_start_a_fight,
-        'action end a fight': action_end_a_fight, 'action conversation': action_conversation,
-        'action end a conversation': action_end_a_conversation
-    }
-    x = []
-    for i in master_types.keys():
-        x.append({i: i.replace(' ', '_')})
-    with jsonlines.open('master_types.jsonl', 'w') as writer:
-        writer.write_all(x)
-
-
-def test():
-    print('1st Test: An ever-changing test dialogue:')
-    prompt = 'The following is a dialogue between a pair of star crossed lovers.'
-    response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=1, max_tokens=100)
-    response = response['choices'][0]['text']
-    print(response)
-    print('End of first test.')
-    print('Test: classification of input.')
-    response = input('')
-    response = classify(response, analyse=True)
-    print(response)
-    print('End of test.')
-
-
-def play(adventure, conditions=None, analyse=True):
-    if conditions is None:
-        conditions = [None, [None]]
-    former_scenes = []
-    a = None
-    running_adventure = True
-    while running_adventure:
-        scene = adventure_structure.get_next_scene(
-            adventure=adventure, all_former_scenes=former_scenes, conditions=conditions
-        )
-        if analyse:
-            print(scene.type)
-            print('location: ' + scene.location.name)
-            print('amount of npcs: ' + str(len(scene.npcs)))
-            for j in scene.npcs:
-                print('NPC: ' + j.name)
-            print('amount of secrets: ' + str(len(scene.secrets)))
-            for j in scene.secrets:
-                print('Secret: ' + j.name)
-        object_of_interest = scene.location
-        running_scene = True
-        params = {'object_of_interest': object_of_interest, 'scene': scene, 'adventure': adventure, 'a': a,
-                  'running_scene': running_scene, 'conditions': conditions, 'running_adventure': running_adventure}
-        params = check_for_trigger(params)
-        object_of_interest = params["object_of_interest"]
-        scene = params["scene"]
-        adventure = params["adventure"]
-        a = params["a"]
-        running_scene = params["running_scene"]
-        conditions = params["conditions"]
-        running_adventure = params["running_adventure"]
-        if len(scene.npcs) == 0:
-            npcs = None
+class GAME:
+    def __init__(self, object_of_interest=None, scene=None, adventure=None, a=None, running_scene=None, conditions=None, running_adventure=True, former_scenes=None, sort=None):
+        if conditions is None:
+            self.conditions = [None, [None]]
         else:
-            npcs = scene.npcs
-        description = scene.location.describe(npcs=npcs)
-        print(description)
-        while running_scene:
-            a = input('<please enter:>')
-            sort = classify(a, analyse)
-            master_types = {}
-            with jsonlines.open('master_types.jsonl', 'r') as reader:
-                for line in reader.iter(type=dict):
-                    master_types.update(line)
-            if sort in master_types.keys():
-                params = {'object_of_interest': object_of_interest, 'scene': scene, 'adventure': adventure, 'a': a,
-                          'running_scene': running_scene, 'conditions': conditions, 'sort': sort,
-                          'running_adventure': running_adventure}
-                result = eval(master_types[sort]+'(**params)')  # Kwargs!!
-                result = check_for_trigger(result)
-                object_of_interest = result['object_of_interest']
-                running_scene = result['running_scene']
-                conditions = result['conditions']
-            else:
-                print('Abilities are not implemented yet.')
-                # with open('data.json', 'r') as f:
-                #    att = f['abilities'][sort]
-                # chance_of_success = 0.5  # chance of success should be dependent on att and player.
-        for i in scene.secrets:
-            if i.name == "won":
-                if i.found:
-                    running_adventure = False
-        input('End of scene. (Press enter to continue)')
+            self.conditions = conditions
+        if former_scenes is None:
+            self.former_scenes = []
+        else:
+            self.former_scenes = former_scenes
+        self.object_of_interest = object_of_interest
+        self.scene = scene
+        self.adventure = adventure
+        self.a = a
+        self.running_scene = running_scene
+        self.running_adventure = running_adventure
+        self.former_scenes = former_scenes
+        self.sort = sort
+
+    def check_for_trigger(self):
+        if self.a.startswith('/') or self.a.startswith('\\'):
+            pass
+        for i in self.adventure.trigger:
+            triggered = False
+            for j in i.when_triggered:
+                if isinstance(j, adventure_structure.SECRET):
+                    if j.found:
+                        triggered = True
+                if isinstance(j, adventure_structure.NPC):
+                    if j in self.scene.npcs:
+                        triggered = True
+                if isinstance(j, adventure_structure.LOCATION):
+                    if self.scene.location == j:
+                        triggered = True
+            if triggered:
+                return i.function(self)  # if an error is triggered add a try except.
+
+    def play(self, analyse=True):
+        while self.running_adventure:
+            self.scene = adventure_structure.get_next_scene(
+                adventure=self.adventure, all_former_scenes=self.former_scenes, conditions=self.conditions
+            )
+            if analyse:
+                print(self.scene.type)
+                print('location: ' + self.scene.location.name)
+                print('amount of npcs: ' + str(len(self.scene.npcs)))
+                for j in self.scene.npcs:
+                    print('NPC: ' + j.name)
+                print('amount of secrets: ' + str(len(self.scene.secrets)))
+                for j in self.scene.secrets:
+                    print('Secret: ' + j.name)
+            self.object_of_interest = self.scene.location
+            self.running_scene = True
+            self.sort = None
+            self.check_for_trigger()  # Is this really needed?
+            print(self.scene.location.describe(npcs=self.scene.npcs))
+            while self.running_scene:
+                self.a = input('<please enter:>')
+                self.sort = classify(self.a, analyse)
+                master_types = {'info': self.info, 'talk': self.talk, 'speech': self.speech, 'fight': self.fight,
+                                'room change': self.room_change, 'action': self.action}
+                if self.sort not in master_types.keys():
+                    print('classification error line 143ish')
+                if self.check_for_trigger():
+                    master_types[self.sort]()
+            for i in self.scene.secrets:
+                if i.name == "won":
+                    if i.found:
+                        self.running_adventure = False
+                        return None
+            self.a = input('End of scene. (Press enter to continue)')
+
+    def info(self):
+        if isinstance(self.object_of_interest, adventure_structure.NPC):
+            print(self.object_of_interest.talk(self.a))  # or fight?
+        elif isinstance(self.object_of_interest, adventure_structure.LOCATION):
+            print(self.object_of_interest.describe(self.a))
+        else:
+            print('Error <info>')
+
+    def action(self):
+        secrets = []
+        for i in self.scene.secrets:
+            if self.object_of_interest in i.where_to_find:
+                if random.random() > 0:
+                    secrets.append(i)
+                    i.found = True
+                    print(f'(Devtool) secret: {i.name}')
+        if len(secrets) == 0:
+            secrets = None
+        if isinstance(self.object_of_interest, adventure_structure.NPC):
+            print(self.object_of_interest.talk(self.a, secrets=secrets))  # or fight?
+        elif isinstance(self.object_of_interest, adventure_structure.LOCATION):
+            print(self.object_of_interest.describe(self.a, secrets=secrets))
+        else:
+            print('Error action')
+
+    def speech(self):
+        if not isinstance(self.object_of_interest, adventure_structure.NPC):
+            person = who(self.a, self.scene)
+            self.object_of_interest = person
+        secrets = []
+        for i in self.scene.secrets:
+            if self.object_of_interest in i.where_to_find:
+                if random.random() > 0:
+                    secrets.append(i)
+                    i.found = True  # always immediately True?
+                    print(f'(Devtool) secret: {i.name}')
+        if len(secrets) == 0:
+            secrets = None
+        print(self.object_of_interest.talk(self.a, secrets=secrets))
+
+    def room_change(self):
+        self.conditions = [where(self.a, self.adventure), [None]]
+        # NPC conditions should explicitly exclude the ones from the last scene.
+        self.running_scene = False
+
+    def fight(self):
+        print('Fighting does not yet work.')
+
+    def talk(self):
+        person = who(self.a, self.scene)
+        if not isinstance(person, adventure_structure.NPC):
+            person = random.choice(self.scene.npcs)
+        print(f'You are talking to {person.name}.')
+        self.object_of_interest = person
+        secrets = []
+        for i in self.scene.secrets:
+            if self.object_of_interest in i.where_to_find:
+                if random.random() > 0:
+                    secrets.append(i)
+                    i.found = True
+                    print(f'(Devtool) You find out the following secret: {i.name}')
+        if len(secrets) == 0:
+            secrets = None
+        print(self.object_of_interest.talk(self.a, secrets=secrets))
 
 
 def classify(a, analyse):
     prompt = f'{a}\n\n###\n\n'
-    response = openai.Completion.create(model='ada:ft-personal-2022-11-27-20-21-30', prompt=prompt, temperature=0,
-                                        max_tokens=12, stop="###")
+    response = openai.Completion.create(model='ada:ft-personal:input-classifier-2022-12-17-07-32-32',
+                                        prompt=prompt, temperature=0, max_tokens=12, stop="###")
     response = response['choices'][0]['text']
-    if analyse:
-        print(f'Classification:{response}')
-        yn = input(f'Is this correct? [Y/n]').lower()
-        document = ''
-        if yn == '':
-            document = 'inputs_unknown.jsonl'
-        elif yn[0] == 'y':
-            document = 'inputs_correct.jsonl'
-            # If not an ability yet, create a new one. !
-        elif yn[0] == 'n':
-            for i in range(5):
-                print(get_type_list())
-                response = input(f'Please copy paste the correct type.')
-                if response in get_type_list():
-                    document = 'inputs_correct2.jsonl'
-                    response = ' ' + response
-                    break
-            if document == '':
-                document = 'inputs_incorrect.jsonl'
-        else:
-            document = 'inputs_unknown.jsonl'
-    else:
-        document = 'inputs_unknown.jsonl'
-    lines = []
-    with jsonlines.open(document, 'r') as reader:
-        for line in reader:
-            lines.append(line)
-    prompt_dict = {'prompt': prompt, 'completion': response + '###'}
-    lines.append(prompt_dict)
-    with jsonlines.open(document, 'w') as writer:
-        writer.write_all(lines)
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    data['sample'].append({'prompt': prompt, 'completion': response + '###'})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
     if response[0] == ' ':
         response = response[1:]
     return response
 
 
-def check_for_trigger(x):
-    for i in x['adventure'].trigger:
-        triggered = False
-        for j in i.when_triggered:
-            if isinstance(j, adventure_structure.SECRET):
-                if j.found:
-                    triggered = True
-            if isinstance(j, adventure_structure.NPC):
-                if j in x['scene'].npcs:
-                    triggered = True
-            if isinstance(j, adventure_structure.LOCATION):
-                if x['scene'].location == j:
-                    triggered = True
-        if triggered:
-            x = i.function(x)
-    return x
-
-
 def who(a, scene):
-    names = {scene.npcs[0].name: scene.npcs[0]}
-    names_str = scene.npcs[0].name
-    for i in scene.npcs[1:]:
-        names.update({i.name: i})
-        names_str = f'{names_str}, {i.name}'
-    prompt = f'Who of the following people is meant by the statement? It could be {names}\n\nStatement: {a}\nPerson: '
-    response = 'As this doesn\'t work anyways, why waste resources?'
-    # response = openai.Completion.create(model='text-davinci-002', prompt=prompt, temperature=0, max_tokens=12,
-    #                                     stop="###")
-    # response = response['choices'][0]['text']
-    if response in names.keys():
-        return names[response]
+    names = []
+    name_dict = {}
+    for i in scene.npcs:
+        names.append(i.name)
+        name_dict.update({i.name.lower(): i})
+    prompt = f'{names.keys()}\n{a}\n\n###\n\n'
+    response = openai.Completion.create(model='curie:ft-personal:who-2022-12-17-23-11-02',
+                                        prompt=prompt, temperature=0, max_tokens=12, stop="###")
+    response = response['choices'][0]['text']
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    data['who'].append({'prompt': prompt, 'completion': response + '###'})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    if response.startswith(' '):
+        response = response[1:]
+    if response.lower() in name_dict.keys():
+        return name_dict[response]
     else:
         print('Who are you talking to?')
         print(names.keys())
@@ -218,135 +212,54 @@ def who(a, scene):
         if response in names.keys():
             return names[response]
         else:
+            print('I did not understand that.')
             return 'could not find'
 
 
 def where(a, adventure):
-    names = {}
-    names_str = ''
-    for i in adventure.major_locations:  # Why only the major_locations?
+    names = []
+    name_dict = {}
+    for i in adventure.major_locations:
         if i.active:
-            names.update({i.name: i})
-            names_str = f'{names_str}, {i.name}'
-    names_str = names_str[2:]
-    prompt = f'Where does the person go to? It could be each of the following: {names_str}\n\nPerson: {a}\nLocation: '
-    response = 'As this doesn\'t work anyways why waste resources.'
-    # response = openai.Completion.create(model='text-davinci-002', prompt=prompt, temperature=0, max_tokens=18)
-    # response = response['choices'][0]['text']
-    if response in names.keys():
-        return names[response]
+            names.append(i.name)
+            name_dict.update({i.name.lower(): i})
+    prompt = f'{names.keys()}\n{a}\n\n###\n\n'
+    response = openai.Completion.create(model='curie:ft-personal:where-2022-12-17-23-05-15',
+                                        prompt=prompt, temperature=0, max_tokens=18)
+    response = response['choices'][0]['text']
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    data['where'].append({'prompt': prompt, 'completion': response + '###'})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    if response.startswith(' '):
+        response = response[1:]
+    if response.lower() in name_dict.keys():
+        return name_dict[response]
     else:
         print('Where are you going?')
         print(names.keys())
-        response = input('Please copypaste where you are going or leave empty to just go somewhere.')
+        response = input('(!) Please copypaste where you are going or leave empty to just go somewhere.')
         if response in names.keys():
             return names[response]
         else:
+            print('I did not understand that.')
             return 'could not find'
 
 
-# Now come all the type functions:
-
-def info_question(**kwargs):
-    if isinstance(kwargs['object_of_interest'], adventure_structure.NPC):
-        print(kwargs['object_of_interest'].talk(kwargs['a']))  # or fight?
-    elif isinstance(kwargs['object_of_interest'], adventure_structure.LOCATION):
-        print(kwargs['object_of_interest'].describe(kwargs['a']))
+def write_as_jsonlines(key):
+    path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
+    x = []
+    with open('data.json') as f:
+        data = json.load(f)[key]
+    if isinstance(data, dict):
+        for i in data[key].keys():
+            x.append({'prompt': i, 'completion': data[key][i]})
     else:
-        print('Error action_other')
-    return kwargs
-
-
-def action_other(**kwargs):
-    if isinstance(kwargs['object_of_interest'], adventure_structure.NPC):
-        secrets = []
-        for i in kwargs['scene'].secrets:
-            if kwargs['object_of_interest'] in i.where_to_find:
-                if random.random() > 0:
-                    secrets.append(i)
-                    i.found = True
-                    print(f'(Devtool) You find out the following secret: {i.name}')
-        if len(secrets) == 0:
-            secrets = None
-        print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))  # or fight?
-    elif isinstance(kwargs['object_of_interest'], adventure_structure.LOCATION):
-        secrets = []
-        for i in kwargs['scene'].secrets:
-            if kwargs['object_of_interest'] in i.where_to_find:
-                if random.random() > 0:
-                    secrets.append(i)
-                    i.found = True
-                    print(f'(Devtool) You find out the following secret: {i.name}')
-        if len(secrets) == 0:
-            secrets = None
-        print(kwargs['object_of_interest'].describe(kwargs['a'], secrets=secrets))
-    else:
-        print('Error action_other')
-    return kwargs
-
-
-def action_speech(**kwargs):
-    if not isinstance(kwargs['object_of_interest'], adventure_structure.NPC):
-        person = who(kwargs['a'], kwargs['scene'])
-        if not isinstance(person, adventure_structure.NPC):
-            person = random.choice(kwargs['scene'].npcs)
-        print(f'You are talking to {person}.')
-        kwargs['object_of_interest'] = person
-    secrets = []
-    for i in kwargs['scene'].secrets:
-        if kwargs['object_of_interest'] in i.where_to_find:
-            if random.random() > 0:
-                secrets.append(i)
-                i.found = True
-                print(f'(Devtool) You find out the following secret: {i.name}')
-    if len(secrets) == 0:
-        secrets = None
-    print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))
-    return kwargs
-
-
-def action_change_room(**kwargs):
-    kwargs['conditions'] = [where(kwargs['a'], kwargs['adventure']), [None]]
-    # NPC conditions hould explicitly exclude the ones from the last scene.
-    kwargs['running_scene'] = False
-    return kwargs
-
-
-def action_start_a_fight(**kwargs):
-    print('The ability <action start a fight> is not implemented yet.')
-    return kwargs
-
-
-def action_end_a_fight(**kwargs):
-    print('The ability <action end a fight> is not implemented yet.')
-    return kwargs
-
-
-def action_conversation(**kwargs):
-    person = who(kwargs['a'], kwargs['scene'])
-    if not isinstance(person, adventure_structure.NPC):
-        person = random.choice(kwargs['scene'].npcs)
-    print(f'You are talking to {person.name}.')
-    kwargs['object_of_interest'] = person
-    secrets = []
-    for i in kwargs['scene'].secrets:
-        if kwargs['object_of_interest'] in i.where_to_find:
-            if random.random() > 0:
-                secrets.append(i)
-                i.found = True
-                print(f'(Devtool) You find out the following secret: {i.name}')
-    if len(secrets) == 0:
-        secrets = None
-    print(kwargs['object_of_interest'].talk(kwargs['a'], secrets=secrets))
-    return kwargs
-
-
-def action_end_a_conversation(**kwargs):
-    scene = kwargs['scene']
-    ob_of_in = kwargs['object_of_interest']
-    print(f'You ended your conversation with {ob_of_in.name} and are now again in {scene.location.name}')
-    kwargs['object_of_interest'] = scene.location
-    return kwargs
+        x = data
+    with jsonlines.open(f'{key}.jsonl', 'w') as writer:
+        writer.write_all(x)
+    return f'{key}.jsonl'
 
 
 if __name__ == '__main__':

@@ -337,7 +337,7 @@ class LOCATION:
                 secret_text = f'{secret_text}{i.description[self]}.'
         else:
             secret_text = ''
-        if npcs is None:
+        if npcs is None or npcs == []:
             npcs = []
             names = ''
         else:

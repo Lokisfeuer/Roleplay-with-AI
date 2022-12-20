@@ -13,34 +13,30 @@ def write_to_json():
             documents.append(i)
     print(documents)
     full_dict = {}
-    documents = ['abilities.jsonl', 'adventures.jsonl', 'inputs_correct.jsonl', 'inputs_correct2.jsonl', 'inputs_incorrect.jsonl', 'inputs_unknown.jsonl', 'master_types.jsonl', 'sample.jsonl', 'test.jsonl']
+    # documents = ['abilities.jsonl', 'adventures.jsonl', 'inputs_correct.jsonl', 'inputs_correct2.jsonl', 'inputs_incorrect.jsonl', 'inputs_unknown.jsonl', 'master_types.jsonl', 'sample.jsonl', 'test.jsonl']
     for i in documents:
         file_dict = {}
         with jsonlines.open(i, 'r') as reader:
             for j in reader.iter(type=dict):
-                if i.startswith('input') or i == 'sample.jsonl':
+                if i.startswith('input') or i == 'sample.jsonl' or i.startswith('wh') or i.startswith('new'):
                     file_dict.update({j['prompt']: j['completion']})
                 else:
                     file_dict.update(j)
         full_dict.update({i[:-6]: file_dict})
     with open('data.json', 'w') as out_file:
-        json.dump(full_dict, out_file, indent=2)
+        json.dump(full_dict, out_file, indent=4)
 
 
 def write_as_jsonlines(key):
     path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
-    dicts = []
+    x = []
     with open('data.json') as f:
-        data = json.load(f)
-    if key.startswith('input') or key.startswith('sample'):
+        data = json.load(f)[key]
+    if isinstance(data, dict):
         for i in data[key].keys():
-            dicts.append({'prompt': i, 'completion': data[key][i]})
+            x.append({'prompt': i, 'completion': data[key][i]})
     else:
-        dicts.append(data[key])
-    with jsonlines.open(f'{key}.jsonl', 'r') as reader:
-        for line in reader:
-            pass
-            # dicts.append(line)
+        x = data
     with jsonlines.open(f'{key}.jsonl', 'w') as writer:
         for i in dicts:
             writer.write(i)
@@ -257,4 +253,4 @@ I throw a punch at Johnathon.
 # write_to_json()
 # write_as_jsonlines('sample')
 # create_newsample('sample', 'inputs_correct', 'inputs_correct2',)
-create_who_and_where_dataset()
+write_to_json()
