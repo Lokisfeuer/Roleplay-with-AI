@@ -2,6 +2,10 @@ import json
 import jsonlines
 import os
 import random
+import textwrap
+import main
+import adventure_structure
+import jsonpickle
 
 
 def write_to_json():
@@ -50,7 +54,11 @@ def create_newsample(*keys):
         with jsonlines.open(f'{i}.jsonl', 'r') as reader:
             for line in reader.iter(type=dict):
                 x.append(line)
-    change_types = {' info question###': ' info###', ' action other###': ' action###', ' action change room###': ' room change###', ' action start a fight###': ' fight###', ' action end a fight###': ' action###', ' action conversation###': ' talk###', ' action end a conversation###': ' action###', ' action speech###': 'speech', ' action other secrets###': ' action###'}  # etc.
+    change_types = {
+        ' info question###': ' info###', ' action other###': ' action###', ' action change room###': ' room change###',
+        'action start a fight###': ' fight###', ' action end a fight###': ' action###',
+        ' action conversation###': ' talk###', ' action end a conversation###': ' action###',
+        ' action speech###': 'speech', ' action other secrets###': ' action###'}
     for i in x:
         if i['completion'] in change_types.keys():
             i['completion'] = change_types[i['completion']]
@@ -250,7 +258,18 @@ I throw a punch at Johnathon.
     with jsonlines.open('wheresample.jsonl', 'w') as writer:
         writer.write_all(x)
 
+
+def save_game_to_json():
+    adventure, conditions = adventure_structure.the_drowned_aboleth()
+    game = main.GAME(adventure=adventure, conditions=conditions)
+    string = jsonpickle.encode(game)
+    print(string)
+    g = jsonpickle.decode(string)
+    print(g.adventure.major_secrets[0].name)
+
+
 # write_to_json()
 # write_as_jsonlines('sample')
 # create_newsample('sample', 'inputs_correct', 'inputs_correct2',)
-write_to_json()
+# write_to_json()
+save_game_to_json()

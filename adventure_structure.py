@@ -5,114 +5,145 @@
 import random
 import math
 import openai
+import jsonpickle
+import json
 
 
-def the_drowned_aboleth():
-    # Triggers are checked at the beginning of each scene and after every action.
-    def on_the_algebra(x):
-        scene = x['scene']
-        for i in scene.npcs:
-            if i == captain or i == matthews:
-                pass
-            else:
-                scene.npcs.remove(i)
-        if scene.location == inside_ship:
-            if sec_i.found:
-                x['conditions'] = [ship, [captain]]
-            else:
-                if 'sort' in x.keys():
-                    print('Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.')
-                    answer = input('Do you want to free Matthews? [Y/n]').lower()
-                    if answer[0] == 'y':
-                        print('You free Matthews.')
-                        sec_i.found = True
-                        scene.npcs.append(matthews)
-                        x['conditions'] = [ship, [captain]]
-                    else:
-                        print('You do not free Matthews.')
-        x['scene'] = scene
-        return x
+def get_by_name(name, x):
+    objs = []
+    for i in [x.adventure.major_secrets, x.adventure.major_locations, x.adventure.major_npcs]:
+        for j in i:
+            if j.name == name:
+                objs.append(j)
+    if len(objs) == 1:
+        return objs[0]
+    else:
+        return None
 
-    def boss_fight(x):
-        # just have an awesome boss fight, ending with setting "won" found.
-        print('You and the captain are having an awesome boss fight. You win.')
-        won.found = True
-        return x
 
-    def at_the_algebra(x):
-        scene = x['scene']
-        if not sec_h.found:
-            if steve not in scene.npcs:
-                scene.npcs.append(steve)
-            if tom not in scene.npcs:
-                scene.npcs.append(tom)
-            if sec_g.found:
-                sailors_helping = 0
-                names = ''
-                for i in sailors_help.keys():
-                    if sec_j.found or not i == michael:
-                        if sailors_help[i].found:
-                            if sailors_helping == 0:
-                                names = f' and {i.name}'
-                            else:
-                                names = f', {i.name}{names}'
-                            sailors_helping = sailors_helping + 1
-                if sailors_helping > 1:
-                    print(f'{names[1:]} could relieve the guards and let you on bord of the Algebra.')
-                    if input('Should they do so? [Y/n]').lower()[0] == 'y':
-                        sec_h.found = True
-                        print(f'You can now proceed to the Algebra.')
-        x['scene'] = scene
-        return x
+def prolouge(self, x):
+    print(f'You, as brave adventurer, have been hired by the very rich Duke of Philsa to find his kidnapped son.\n'
+          f'So you set out to find the kidnappers and tracked them to the small port town of Abolia. You have now\n'
+          f'arrived there in the late evening. It is a dark night and the streets are almost empty. Only one ship\n'
+          f'with the lettering "Algebra" lies at anchor. You head towards the only lighted house - an inn called\n'
+          f'"The drowned Aboleth". As you walk towards the inn, a hooded figure suddenly get in your way. He\n'
+          f'pulls out a knife and points it at the leather pouch containing 100 gold coins that the Baron gave\n'
+          f'you as a deposit. He says: "Give me the money, if you value your life".')
+    x.adventure.trigger.remove(self)
+    return True
 
-    def won(x):
-        print('This is a great awesome sounding epilogue.')
-        print('Thanks for playing!')
-        x['running_adventure'] = False
-        pass
 
-    def loveletter(x):
-        if sec_b.found:
-            print('You can now deliver Johns loveletter to Isabella.')
-            if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
-                sailors_help[piet].found = True
-        return x
+def on_the_algebra(self, x):
+    for i in x.scene.npcs:
+        if i.name == 'captain' or i.name == 'matthews':
+            pass
+        else:
+            x.scene.npcs.remove(i)
+    if x.scene.location.name == 'inner deck of the Algebra':
+        if get_by_name('Matthews freed', x).found:
+            x.conditions = [get_by_name('Algebra', x), [get_by_name('Captain', x)]]
+        else:
+            if x.sort is not None:
+                print('Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.')
+                answer = input('Do you want to free Matthews? [Y/n] ').lower()
+                if answer[0] == 'y':
+                    print('You free Matthews.')
+                    get_by_name('Matthews freed', x).found = True
+                    x.scene.npcs.append(get_by_name('Matthews Joachim Karl von Philsa', x))
+                    x.conditions = [get_by_name('Algebra', x), [get_by_name('Captain', x)]]
+                else:
+                    print('You do not free Matthews.')
+    return True
 
-    def money(x):
-        if sec_f.found:
+
+def boss_fight(self, x):
+    # just have an awesome boss fight, ending with setting "won" found.
+    print('You and the captain are having an awesome boss fight. You win.')
+    get_by_name('won', x).found = True
+    x.adventure.trigger.remove(self)
+    return False
+
+
+def at_the_algebra(self, x):
+    if not get_by_name('Guards relieved.', x).found:
+        if get_by_name('Steve', x) not in x.scene.npcs:
+            x.scene.npcs.append(get_by_name('Steve', x))
+        if get_by_name('Tom', x) not in x.scene.npcs:
+            x.scene.npcs.append(get_by_name('Tom', x))
+        if get_by_name('Any two members of the crew of the Algebra can relieve the guards of the Algebra.', x).found:
+            sailors_helping = 0
+            names = ''
+            sailors_help = {}
+            for i in []:
+                sailors_help.update(
+                    {get_by_name(i, x): get_by_name(f'{get_by_name(i, x).name} is willing to help the player.', x)})
+            for i in sailors_help.keys():
+                if get_by_name('Michael started on the Algebra.', x).found or not i == get_by_name('Micheal', x):
+                    if sailors_help[i].found:
+                        if sailors_helping == 1:
+                            names = f' and {i.name}'
+                        else:
+                            names = f', {i.name}{names}'
+                        sailors_helping = sailors_helping + 1
+            if sailors_helping > 1:
+                print(f'{names[2:]} could relieve the guards and let you on bord of the Algebra.')
+                if input('Should they do so? [Y/n] ').lower()[0] == 'y':
+                    get_by_name('Guards relieved.', x).found = True
+                    print(f'You can now proceed to the Algebra.')
+                    return False
+    return True
+
+
+# replace everything from outer function and set them out of function.
+def won(self, x):
+    print('This is a great awesome sounding, really inspiring and epic epilogue.')
+    print('Thanks for playing!')
+    x.adventure_running = False
+    return False
+
+
+def loveletter(self, x):
+    if get_by_name('There is a bay where the crew of the Algebra stores their goods.', x).found:
+        print('You can now deliver Johns loveletter to Isabella.')
+        if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
+            get_by_name(f'Piet is willing to help the player.', x).found = True
+            x.adventure.trigger.remove(self)
+    return True
+
+
+def money(self, x):
+    if 'Greg' == x.object_of_interest.name:
+        if get_by_name('Greg has a gambling problem and desperately needs money.', x).found:
             print('You can help out Greg with a little bit of your money.')
             if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
-                sailors_help[greg].found = True
-        return x
+                get_by_name('Greg is willing to help the player.', x).found = True
+                x.adventure.trigger.remove(self)
+    return True
 
-    def alcohol(x):
-        if sec_k.found:
-            print('You can get Piet a bottle of liquor.')
-            if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
-                sailors_help[piet].found = True
-            x['adventure'].trigger.remove(alcohol)
-        return x
 
-    def secret_message(x):
-        if sec_a.found:
-            print('You find a message in your pocket. Somebody must have smuggled it into there. It says the '
-                  'following:\nI, Matthews Joseph Charles of Philsa, son of the duke of Philsa am being held against '
-                  'my will on the Algebra. My father would be willing to pay great amounts for my rescue. Please help '
-                  'me!!!')
-            x['adventure'].trigger.remove(secret_message)
-        return x
+def alcohol(self, x):
+    if get_by_name('Piet enjoys alcohol a little to much but he doesn\t get to have any on the Algebra.', x).found:
+        print('Piet seems pretty broke and asks you for a bottle of liquor can get Piet a bottle of liquor.')
+        if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
+            get_by_name('Piet is willing to help the player.', x).found = True
+        x.adventure.trigger.remove(self)
+    return True
 
-    def prolouge(x):
-        print(f'You, as brave adventurer, have been hired by the very rich Duke of Philsa to find his kidnapped son.\n'
-              f'So you set out to find the kidnappers and tracked them to the small port town of Abolia. You have now\n'
-              f'arrived there in the late evening. It is a dark night and the streets are almost empty. Only one ship\n'
-              f'with the lettering "Algebra" lies at anchor. You head towards the only lighted house - an inn called\n'
-              f'"The drowned Aboleth". As you walk towards the inn, a hooded figure suddenly get in your way. He\n'
-              f'pulls out a knife and points it at the leather pouch containing 100 gold coins that the Baron gave\n'
-              f'you as a deposit. He says: "Give me the money, if you value your life".')
-        x['adventure'].trigger.remove(prolouge)
-        return x
 
+def secret_message(self, x):
+    if get_by_name('There is a message given to the players saying that Matthews is being held on the Algebra.',
+                   x).found:
+        print('You find a message in your pocket. Somebody must have smuggled it into there. It says the '
+              'following:\nI, Matthews Joseph Charles of Philsa, son of the duke of Philsa am being held against '
+              'my will on the Algebra. My father would be willing to pay great amounts for my rescue. Please help '
+              'me!!!')
+        x.adventure.trigger.remove(self)
+    return True
+
+
+def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol,
+                        secret_message):
+    # Triggers are checked at the beginning of each scene and after every action.
 
     sec_false = SECRET(name='false', where_to_find=[])
 
@@ -149,7 +180,7 @@ def the_drowned_aboleth():
 
     streets = LOCATION(name='streets', description='These are the dark streets of the village. The local tavern "The '
                                                    'drowned aboleth" can be found here.')
-    tavern = LOCATION(name='tavern "The drowned aboleth"',
+    tavern = LOCATION(name='tavern',
                       description='This is the local tavern "The drowned aboleth" which is the social centre of the '
                                   'village. The tavern is well filled, beer and alcoholic beverages flow in streams '
                                   'and there is generally good mood. On one of the walls a map of the local area with '
@@ -206,7 +237,7 @@ def the_drowned_aboleth():
     sailors_help.update({piet: SECRET(name=f'{piet.name} is willing to help the player.', where_to_find=[])})
     # other_secrets:
     # sec_h = SECRET(name='Guards relieved.', where_to_find=[])
-    sec_i = SECRET(name='Matthews freed.', where_to_find=[])
+    sec_i = SECRET(name='Matthews freed', where_to_find=[])
     sec_j = SECRET(name='Michael started on the Algebra.', where_to_find=[])
     # sec_false = SECRET(name='false', where_to_find=[])
     sec_won = SECRET(name='Won', where_to_find=[])
@@ -228,11 +259,18 @@ def the_drowned_aboleth():
     secrets = [sec_a, sec_b, sec_c, sec_d, sec_e, sec_f, sec_g, sec_h, sec_i, sec_j, sec_k, sec_won, sec_false,
                sec_lighthouse, sec_bay]
     secrets.extend(sailors_help.values())
-    trigger = [trig_a, trig_b, trig_c, trig_d, loveletter, money, alcohol, secret_message, prolouge]
+    trigger = [prolouge, trig_a, trig_b, trig_c, trig_d, loveletter, money, alcohol, secret_message]
     starting_conditions = [streets, [robber]]
 
-    adventure = ADVENTURE(major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger=trigger,
+    name = 'the drowned aboleth'
+    adventure = ADVENTURE(name=name, major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger=trigger,
                           actionrelevance=0)
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    data['adventures'].update({name: {'adventure': jsonpickle.encode(adventure, keys=True),
+                                      'conditions': jsonpickle.encode(starting_conditions, keys=True)}})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
     return adventure, starting_conditions
 
 
@@ -253,7 +291,7 @@ def play_family_adventure():
     sieg = SECRET(name="won", where_to_find=[sophie])
     secrets = [sieg, abendessen, bettzeit, beruhigen]
 
-    family_adventure = ADVENTURE(major_npcs=npcs, major_locations=locations, major_secrets=secrets)
+    family_adventure = ADVENTURE('family adventure', major_npcs=npcs, major_locations=locations, major_secrets=secrets)
     return family_adventure
 
 
@@ -306,8 +344,8 @@ class NPC:
             # The single \n before person is correct.
         for i in range(min(len(self.former_inputs), 3)):
             prompt = f'{prompt}{self.former_inputs[i]}\n{self.name}: {self.former_answers[i]}\n\nPerson: '
-        prompt = f'{prompt}{a}\n{self.name}: '
-        response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0.8,
+        prompt = f'{prompt}{a}\n{self.name}: '  # logical error, Person: I talk to the bartender.
+        response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0.4,
                                             max_tokens=100)
         response = response['choices'][0]['text']
         self.former_inputs.append(a)
@@ -326,7 +364,10 @@ class LOCATION:
         if description is None:
             self.description = ''
         else:
-            self.description = description
+            if description[0] == ' ':
+                self.description = description
+            else:
+                self.description = ' ' + description
         self.prompt = ''
         check_active(self)
 
@@ -359,7 +400,7 @@ class LOCATION:
 
 class SECRET:
     def __init__(self, name, where_to_find, relevance=1, positive=True,
-                 found=False, conditions=None, description=None):  # relevance is small for minor secrets.
+                 found=False, conditions=None, description=None, clue=True):  # relevance is small for minor secrets.
         self.name = name
         self.where_to_find = where_to_find  # list of NPCs and or locations.
         self.relevance = relevance
@@ -380,6 +421,7 @@ class SECRET:
             for i in where_to_find:
                 if i not in description.keys():
                     self.description.update({i: self.name})
+        self.clue = clue
         check_active(self)
 
 
@@ -465,8 +507,9 @@ class TRIGGER:
 
 
 class ADVENTURE:  # To do: differ between active and inactive locations, npcs and secrets
-    def __init__(self, setting=None, major_npcs=None, major_locations=None, major_secrets=None, actions=None,
+    def __init__(self, name, setting=None, major_npcs=None, major_locations=None, major_secrets=None, actions=None,
                  trigger=None, actionrelevance=1, difficultyrelevance=1, hoperelevance=1):
+        self.name = name
         self.seed = None
         if isinstance(setting, SETTING):
             self.setting = setting
@@ -621,4 +664,4 @@ def evaluate_getinputs(former_scenes, adventure):  # former_scenes[0] is the old
 
     # except:
     # print("Something went wrong (evaluate_getinputs) <!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!>")
-    # return [1, 0.1, 1, adventure]
+    # return
