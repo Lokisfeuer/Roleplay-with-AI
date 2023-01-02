@@ -20,6 +20,8 @@ import jsonlines
 
 # openai.api_key = os.getenv('OPENAI_API_KEY')
 openai.api_key = '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'
+
+
 # model = 'ada:ft-personal-2022-11-27-20-21-30'
 # old fine tuned model = 'ada:ft-personal-2022-11-27-17-16-21'
 # model = ada:ft-personal:input-classifier-2022-12-17-07-32-32
@@ -28,18 +30,30 @@ openai.api_key = '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'
 
 
 def write_adventure():
-    object_dict = {'npcs': [], 'locations': [], 'secrets': []}
-    print(f'Please enter all ')
-    for i in range(3):
-        a = input('<please enter:> ')
+    object_dict = {'npcs': {}, 'locations': {}, 'secrets': {}, 'trigger': {}}
+    print(f'Please enter all your npcs, locations, secrets and trigger. When you are done with one just type "/next"')
+    for i in object_dict.keys():
+        a = input(f'({i}) <please enter:> ')
         while not a.startswith('/'):
-            object_dict[i].append(a)
+            object_dict[i].update({a: []})
             a = input('<please enter:> ')
+        print('now please enter all locations or if you already did that all secrets')
+        for i in object_dict['secrets'].keys():
+            print(f'Where can the secret "{i}"be found? Enter all locations and npcs. When you are done just type '
+                  f'"/next"')
+            a = input(f'({i}) <please enter:> ')
+            while not a.startswith('/'):
+                # ask for closest match in object_dict
+                object_dict['secrets'][i].append(a)
+                a = input('<please enter:> ')
+
 
 def main():
     # write_to_json()  # Error!
     # test()
-    trigger = [adventure_structure.prolouge, adventure_structure.on_the_algebra, adventure_structure.boss_fight, adventure_structure.at_the_algebra, adventure_structure.won, adventure_structure.loveletter, adventure_structure.money, adventure_structure.alcohol, adventure_structure.secret_message]
+    trigger = [adventure_structure.prolouge, adventure_structure.on_the_algebra, adventure_structure.boss_fight,
+               adventure_structure.at_the_algebra, adventure_structure.won, adventure_structure.loveletter,
+               adventure_structure.money, adventure_structure.alcohol, adventure_structure.secret_message]
     adventure_structure.the_drowned_aboleth(*trigger)
     game, username = login()
     game.play(username=username)
@@ -74,11 +88,11 @@ def login():
     print(f'Which adventure do you want to play?')
     adventures = list(data['adventures'].keys())
     for i in range(len(adventures)):
-        print(f'    {adventures[i]} ({i+1})')
+        print(f'    {adventures[i]} ({i + 1})')
     adventure = input('Please enter the name or number of the adventure you want to play: ')
     while adventure not in adventures:
         if adventure[0].isdigit():
-            adventure = adventures[int(adventure[0])-1]
+            adventure = adventures[int(adventure[0]) - 1]
         else:
             adventures = data['adventures'].keys()
             for i in range(len(adventure)):
@@ -108,7 +122,8 @@ def login():
 
 
 class GAME:
-    def __init__(self, object_of_interest=None, scene=None, adventure=None, a=None, running_scene=None, conditions=None, running_adventure=True, former_scenes=None, sort=None):
+    def __init__(self, object_of_interest=None, scene=None, adventure=None, a=None, running_scene=None, conditions=None,
+                 running_adventure=True, former_scenes=None, sort=None):
         if conditions is None:
             self.conditions = [None, [None]]
         else:
@@ -132,13 +147,13 @@ class GAME:
         back = []
         a = self.a.replace('\\', '/')
         if '/' in a[:3]:
-            a = '/'+''.join(self.a.split('/')[1:])
+            a = '/' + ''.join(self.a.split('/')[1:])
             while a.startswith('/ '):
-                a = '/'+a[2:]
+                a = '/' + a[2:]
             # commands: back, log (inventory and secrets), clue, help, /mastertype a, describe scene (analyse)
             b = False
             if a.startswith('/b'):
-                print('Taking back your action does not work yet.')
+                print('Taking back your last input does not work yet. Sorry.')
                 pass
             elif a.startswith('/l'):
                 for i in self.adventure.major_secrets:
@@ -153,7 +168,9 @@ class GAME:
                     clue.found = True
                     print(f'Here is your clue: {clue.name}.{clue.description}')
             elif a.startswith('/h'):
-                print('Here are all commands and what they do. Just enter them after the <please enter:> instead of your normal statement.')
+                print(
+                    'Here are all commands and what they do. Just enter them after the <please enter:> instead of '
+                    'your normal statement.')
                 print(f'"/b" or "/back"         This command takes back your last input.')
                 print(f'"/h" or "/help"         This command lists and explains all commands.')
                 print(f'"/l" or "/log"          This command lists everything you have already found and collected.')
@@ -167,7 +184,8 @@ class GAME:
                 print(f'"/v" or "/verbatim"     This command classifies the following statement as verbatim (speech).')
                 print(f'"/t" or "/talk"         This command classifies the following statement as an attempt to')
                 print(f'                        start a conversation.')
-                print(f'"/f" or "/fight"        This command classifies the following statement as an aggressive action.')
+                print(
+                    f'"/f" or "/fight"        This command classifies the following statement as an aggressive action.')
                 print(f'"/r" or "/room change"  This command classifies the following statement as a room change.')
                 print('These 6 commands are not necessary, usually inputs are automatically classified correctly.')
             elif a.startswith('/d'):
@@ -265,7 +283,6 @@ class GAME:
             self.a = input('End of scene. (Press enter to continue)')
             self.former_scenes.append(self.scene)
 
-
     def info(self):
         if isinstance(self.object_of_interest, adventure_structure.NPC):
             print(self.object_of_interest.talk(self.a))  # or fight?
@@ -293,12 +310,13 @@ class GAME:
         elif isinstance(self.object_of_interest, adventure_structure.LOCATION):
             response = self.object_of_interest.describe(self.a, secrets=secrets)
         else:
+            response = ''
             print('(Devtool) Error action line 195ish')
         if secrets is not None:
             for i in secrets:
                 prompt = f'{response}\n\nWas the following secret told in the text above?\nSecret: {i.description}\n\nYes or no?\n'
                 mentioned = openai.Completion.create(model='text-davinci-003',
-                                                    prompt=prompt, temperature=0, max_tokens=1, )
+                                                     prompt=prompt, temperature=0, max_tokens=1, )
                 mentioned = mentioned['choices'][0]['text']
                 if mentioned.lower().startswith('y'):
                     print(f'(Devtool) Secret {i.name} was found.')
@@ -319,41 +337,39 @@ class GAME:
             if self.object_of_interest in i.where_to_find:
                 if random.random() > 0:
                     secrets.append(i)
-                    print(f'(Devtool) secret: {i.name}')
+                    print(f'(Devtool) chance for secret: {i.name}')
         if len(secrets) == 0:
             secrets = None
         response = self.object_of_interest.talk(self.a, secrets=secrets)
         if secrets is not None:
             for i in secrets:
-                prompt = f'{response}\n\nWas the following secret told in the text above?\nSecret: {i.description}\n\nYes or no?\n'
+                prompt = f'{response}\n\nWas the following secret told in the text above?\nSecret: {i.description}\n\nYes or no?\n\n'
                 mentioned = openai.Completion.create(model='text-davinci-003',
-                                                    prompt=prompt, temperature=0, max_tokens=1, )
+                                                     prompt=prompt, temperature=0, max_tokens=1)
                 mentioned = mentioned['choices'][0]['text']
                 if mentioned.lower().startswith('y'):
-                    print(f'(Devtool) Secretm {i.name} was found.')
+                    print(f'(Devtool) Secret {i.name} was found.')
                     i.found = True
                 elif mentioned.lower().startswith('n'):
                     i.found = False
                 else:
-                    print('(Devtool) Error secret mentioned? Line 222ish.')
+                    print(f'(Devtool) Error secret mentioned? Line 222ish. Mentioned: "{mentioned}".')
                     i.found = False
         print(response)
 
     def room_change(self):
         loc = where(self.a, self.adventure)
         # NPC conditions should explicitly exclude the ones from the last scene.
-        if input(f'Do you want to leave {self.scene.location.name} and go to {loc.name}? [Y/n] ').lower().startswith('y'):
+        if input(f'Do you want to leave {self.scene.location.name} and go to {loc.name}? [Y/n] ').lower().startswith(
+                'y'):
             self.conditions = [loc, [None]]
             self.running_scene = False
-
 
     def fight(self):
         print('Fighting does not yet work.')
 
     def talk(self):
         person = who(self.a, self.scene)
-        if not isinstance(person, adventure_structure.NPC):
-            person = random.choice(self.scene.npcs)
         print(f'You are talking to {person.name}.')
         self.object_of_interest = person
         print(self.object_of_interest.talk(self.a, secrets=None))
@@ -394,14 +410,21 @@ def who(a, scene):
     if response.lower() in name_dict.keys():
         return name_dict[response.lower()]
     else:
-        print('Who are you talking to?')
-        print(names)
-        response = input('Please copypaste who you  are talking to or leave empty to just talk to someone.')
+        print('With whom are you interacting?')
+        str = ''
+        for i in names[:-1]:
+            str = f'{str}, {i}'
+        str = str[2:]+' or '+names[-1]
+        response = input(f'{str}\nPlease enter who you are talking to or leave empty to just talk to someone. ')
+        prompt = f'{names}\nI interact with {response} the following way: {a}\n\n###\n\n'
+        response = openai.Completion.create(model='curie:ft-personal:who-2022-12-17-23-11-02',
+                                            prompt=prompt, temperature=0, max_tokens=12, stop="###")
         if response in names:
             return name_dict[response.lower()]
         else:
-            print('I did not understand that.')
-            return 'could not find'
+            person = random.choice(scene.npcs)
+            print(f'I did not understand that. You are now talking to {person.name}')
+            return person
 
 
 def where(a, adventure):
