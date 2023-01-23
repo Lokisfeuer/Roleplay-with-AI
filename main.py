@@ -3,23 +3,28 @@
 # an intelligent adventure writer.
 # Every Scene Type intelligent interpreter
 # Something that finds out if secrets have been told.
-import jsonpickle
+
 # next steps:
+# just one input point
+# set up DC bot.
 # test commands
 # command take back
 # A website
 # easier and with AI written adventures. (Text to code?)
 
-
+import jsonpickle
 import openai
 import random
 import adventure_structure
 import os
 import json
 import jsonlines
+import discord
+import datetime
 
-# openai.api_key = os.getenv('OPENAI_API_KEY')
-openai.api_key = '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'
+openai.api_key = os.getenv('OPENAI_API_KEY')
+TOKEN = os.getenv('DISCORD_TOKEN')
+client = discord.Client(intents=discord.Intents.default())
 
 
 # model = 'ada:ft-personal-2022-11-27-20-21-30'
@@ -62,6 +67,69 @@ def main():
     pass
 
 
+# This is the attempt to set up a discord bot via which one can play adventures. (It does not work (yet).)
+@client.event
+async def on_ready():
+    print(f'{client.user.name} has connected to Discord.')
+
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    else:
+        if not isinstance(message.channel, discord.channel.DMChannel):
+            if not message.content.lower().startswith('/dm'):
+                return
+            else:
+                pass
+        with open('data.json', 'r') as f:
+            data = json.load(f)
+        username = message.author.name
+        answer = ''
+        if username not in data['players'].keys() or (datetime.datetime.now(datetime.timezone.utc) - message.channel.history()[1].created_at).total_seconds() > 1800:
+            if username not in data['players'].keys():
+                answer = answer+'You are not registered yet. An account with your username is being created.'
+                data['players'].update({username: {}})
+            else:
+                answer = answer+'Resetting...'
+            data['players'][username].update({'fetching game': True})
+            answer = answer+'\nWhich adventure do you want to play?'
+            adventures = list(data['adventures'].keys())
+            for i in range(len(adventures)):
+                answer = answer+f'\n    {adventures[i]} ({i + 1})'
+            answer = answer+'\nPlease enter the name or number of the adventure you want to play.'
+        else:
+            if data['players'][username]['fetching game']:
+                data['players'][username].update({'fetching game': False})
+                adventure = message.content
+                adventures = list(data['adventures'].keys())
+                if adventure in adventures or adventure[0].isdigit():
+                    if adventure[0].isdigit():
+                        adventure = adventures[int(adventure[0]) - 1]
+                    conditions = jsonpickle.decode(data['adventures'][adventure]['conditions'], keys=True)
+                    adv = jsonpickle.decode(data['adventures'][adventure]['adventure'], keys=True)
+                    game = GAME(adventure=adv, conditions=conditions)
+                    if adventure not in data['players'][username].keys():
+                        data['players'][username].update({adventure: jsonpickle.encode(game, keys=True)})
+                    data['players'][username].update({'recent adventure': adventure})
+                    answer = f'You are logged in as {username} and are playing the adventure {adventure}.\n\n'
+                    answer = answer+game.dc_play('Please describe the Situation.')
+                else:
+                    data['players'][username].update({'fetching game': True})
+                    answer = 'That did not work. Please (re-)enter the name or number of the adventure you want to ' \
+                             'play. '
+            else:
+                # This is the standard case during a game.
+                adventure = data['players'][username]['recent adventure']
+                game = jsonpickle.decode(data['players'][username][adventure][-1], keys=True)
+                answer = game.dc_play(message.content)
+        with open('data.json', 'w') as f:
+            f.write(json.dumps(data))
+        await message.channel.send(answer)
+
+
+
 def login():
     username = input('Please enter your username: ')
     with open('data.json', 'r') as f:
@@ -85,6 +153,7 @@ def login():
             username = input('Please enter your username: ')
         accounts = list(data['players'].keys())
     print(f'You are logged in as {username}.')
+
     print(f'Which adventure do you want to play?')
     adventures = list(data['adventures'].keys())
     for i in range(len(adventures)):
@@ -247,6 +316,9 @@ class GAME:
             return False
         return True
 
+    def dc_play(self, input):
+        return 'Playing via discord does not work (yet).'
+
     def play(self, username='username', analyse=True):
         while self.running_adventure:
             self.scene = adventure_structure.get_next_scene(
@@ -274,7 +346,7 @@ class GAME:
                 if self.sort not in master_types.keys():
                     print('classification error line 143ish')
                 if self.check_for_trigger():
-                    master_types[self.sort]()
+                    master_types[self.sort]()  # (too?) Tricky to convert for dc_play()
             for i in self.scene.secrets:
                 if i.name == "won":
                     if i.found:
