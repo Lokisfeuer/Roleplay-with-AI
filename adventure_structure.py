@@ -96,7 +96,7 @@ def at_the_algebra(self, x):
 
 # replace everything from outer function and set them out of function.
 def won(self, x):
-    print('This is a great awesome sounding, really inspiring and epic epilogue.')
+    print('This is a great, awesome sounding, really inspiring and epic epilogue.')
     print('Thanks for playing!')
     x.adventure_running = False
     return False

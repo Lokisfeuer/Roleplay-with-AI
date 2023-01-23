@@ -8,9 +8,9 @@ import adventure_structure
 import jsonpickle
 
 
-def write_to_json():
+def write_to_json():  # from jsonlines
     # Does not work!!
-    path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
+    path = # paste path to files
     documents = []
     for i in os.listdir(path):
         if i.endswith('.jsonl'):

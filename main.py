@@ -2,10 +2,9 @@
 # A setting generator.
 # an intelligent adventure writer.
 # Every Scene Type intelligent interpreter
-# Something that finds out if secrets have been told.
 
 # next steps:
-# just one input point
+# just one input and one output point
 # set up DC bot.
 # test commands
 # command take back
