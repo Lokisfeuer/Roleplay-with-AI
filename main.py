@@ -23,7 +23,6 @@ import datetime
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 TOKEN = os.getenv('DISCORD_TOKEN_ROLEPLAY')
-GUILD = "Roboterserver"
 client = discord.Client(intents=discord.Intents.default())
 
 
