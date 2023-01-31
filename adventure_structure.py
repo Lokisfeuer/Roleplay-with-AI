@@ -21,50 +21,61 @@ def get_by_name(name, x):
         return None
 
 
-def prolouge(self, x):
-    print(f'You, as brave adventurer, have been hired by the very rich Duke of Philsa to find his kidnapped son.\n'
-          f'So you set out to find the kidnappers and tracked them to the small port town of Abolia. You have now\n'
-          f'arrived there in the late evening. It is a dark night and the streets are almost empty. Only one ship\n'
-          f'with the lettering "Algebra" lies at anchor. You head towards the only lighted house - an inn called\n'
-          f'"The drowned Aboleth". As you walk towards the inn, a hooded figure suddenly get in your way. He\n'
-          f'pulls out a knife and points it at the leather pouch containing 100 gold coins that the Baron gave\n'
-          f'you as a deposit. He says: "Give me the money, if you value your life".')
-    x.adventure.trigger.remove(self)
+def prolouge(self, x, counter, message=None):
+    if self in x.adventure.trigger:
+        x.adventure.trigger.remove(self)
+    string = \
+        f'You, as brave adventurer, have been hired by the very rich Duke of Philsa to find his kidnapped ' \
+        f'son.\nSo you set out to find the kidnappers and tracked them to the small port town of Abolia. ' \
+        f'You have now\n arrived there in the late evening. It is a dark night and the streets are almost' \
+        f' empty. Only one ship\nwith the lettering "Algebra" lies at anchor. You head towards the only ' \
+        f'lighted house - an inn called\n"The drowned Aboleth". As you walk towards the inn, a hooded figure ' \
+        f'suddenly get in your way. He\npulls out a knife and points it at the leather pouch containing 100' \
+        f' gold coins that the Baron gave\n you as a deposit. He says: "Give me the money, if you value your' \
+        f'life".'
+    if counter == 0:
+        return string
     return True
 
 
-def on_the_algebra(self, x):
-    for i in x.scene.npcs:
-        if i.name == 'captain' or i.name == 'matthews':
-            pass
-        else:
-            x.scene.npcs.remove(i)
-    if x.scene.location.name == 'inner deck of the Algebra':
-        if get_by_name('Matthews freed', x).found:
+def on_the_algebra(self, x, counter, message=None):
+    if counter == 0:
+        for i in x.scene.npcs:
+            if i.name == 'captain' or i.name == 'matthews':
+                pass
+            else:
+                x.scene.npcs.remove(i)
+        if x.scene.location.name == 'inner deck of the Algebra':
+            if get_by_name('Matthews freed', x).found:
+                x.conditions = [get_by_name('Algebra', x), [get_by_name('Captain', x)]]
+            else:
+                if x.sort is not None:
+                    string = 'Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.\n' \
+                             'Do you want to free Matthews? [Y/n]'
+                    return string
+    elif x.scene.location.name == 'inner deck of the Algebra' and counter == 1 and not get_by_name('Matthews freed', x).found:
+        answer = x.a.lower()
+        if answer[0] == 'y':
+            string = 'You free Matthews.'
+            get_by_name('Matthews freed', x).found = True
+            x.scene.npcs.append(get_by_name('Matthews Joachim Karl von Philsa', x))
             x.conditions = [get_by_name('Algebra', x), [get_by_name('Captain', x)]]
         else:
-            if x.sort is not None:
-                print('Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.')
-                answer = input('Do you want to free Matthews? [Y/n] ').lower()
-                if answer[0] == 'y':
-                    print('You free Matthews.')
-                    get_by_name('Matthews freed', x).found = True
-                    x.scene.npcs.append(get_by_name('Matthews Joachim Karl von Philsa', x))
-                    x.conditions = [get_by_name('Algebra', x), [get_by_name('Captain', x)]]
-                else:
-                    print('You do not free Matthews.')
+            string = 'You do not free Matthews.'
+        return string
     return True
 
 
-def boss_fight(self, x):
+def boss_fight(self, x, counter, message=None):
     # just have an awesome boss fight, ending with setting "won" found.
-    print('You and the captain are having an awesome boss fight. You win.')
-    get_by_name('won', x).found = True
-    x.adventure.trigger.remove(self)
+    if counter == 0:
+        get_by_name('won', x).found = True
+        x.adventure.trigger.remove(self)
+        return 'You and the captain are having an awesome boss fight. You win.'
     return False
 
 
-def at_the_algebra(self, x):
+def at_the_algebra(self, x, counter, message=None):
     if not get_by_name('Guards relieved.', x).found:
         if get_by_name('Steve', x) not in x.scene.npcs:
             x.scene.npcs.append(get_by_name('Steve', x))
@@ -86,58 +97,69 @@ def at_the_algebra(self, x):
                             names = f', {i.name}{names}'
                         sailors_helping = sailors_helping + 1
             if sailors_helping > 1:
-                print(f'{names[2:]} could relieve the guards and let you on bord of the Algebra.')
-                if input('Should they do so? [Y/n] ').lower()[0] == 'y':
+                if counter == 0:
+                    return f'{names[2:]} could relieve the guards and let you on bord of the Algebra.\nShould they do so? [Y/n]'
+                elif counter == 1 and x.a.lower.startswith('y'):
                     get_by_name('Guards relieved.', x).found = True
-                    print(f'You can now proceed to the Algebra.')
-                    return False
+                    return f'You can now proceed to the Algebra.'
     return True
 
 
 # replace everything from outer function and set them out of function.
-def won(self, x):
-    print('This is a great, awesome sounding, really inspiring and epic epilogue.')
-    print('Thanks for playing!')
-    x.adventure_running = False
-    return False
+def won(self, x, counter, message=None):
+    if counter == 0:
+        return 'This is a great, awesome sounding, really inspiring and epic epilogue. Thanks for playing!'
+        x.adventure_running = False
+    else:
+        return False
 
 
-def loveletter(self, x):
-    if get_by_name('There is a bay where the crew of the Algebra stores their goods.', x).found:
-        print('You can now deliver Johns loveletter to Isabella.')
-        if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
-            get_by_name(f'Piet is willing to help the player.', x).found = True
-            x.adventure.trigger.remove(self)
-    return True
-
-
-def money(self, x):
-    if 'Greg' == x.object_of_interest.name:
-        if get_by_name('Greg has a gambling problem and desperately needs money.', x).found:
-            print('You can help out Greg with a little bit of your money.')
-            if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
-                get_by_name('Greg is willing to help the player.', x).found = True
+def loveletter(self, x, counter, message=None):
+    if get_by_name('John is in love with Isabella and wants the players to bring her a loveletter from him.', x).found:
+        if counter == 0:
+            return 'You can now deliver Johns loveletter to Isabella.\nDo you want to do so? [Y/n]'
+        else:
+            if x.a.lower().startswith('y'):
+                get_by_name(f'John is willing to help the player.', x).found = True
                 x.adventure.trigger.remove(self)
     return True
 
 
-def alcohol(self, x):
-    if get_by_name('Piet enjoys alcohol a little to much but he doesn\t get to have any on the Algebra.', x).found:
-        print('Piet seems pretty broke and asks you for a bottle of liquor can get Piet a bottle of liquor.')
-        if input('Do you want to do so? [Y/n]').lower()[0] == 'y':
-            get_by_name('Piet is willing to help the player.', x).found = True
-        x.adventure.trigger.remove(self)
+def money(self, x, counter, message=None):
+    if 'Greg' == x.object_of_interest.name:
+        if get_by_name('Greg has a gambling problem and desperately needs money.', x).found:
+            if counter == 0:
+                return 'You can help out Greg with a little bit of your money.\nDo you want to do so? [Y/n]'
+            else:
+                if x.a.lower().startswith('y'):
+                    get_by_name('Greg is willing to help the player.', x).found = True
+                    x.adventure.trigger.remove(self)
     return True
 
 
-def secret_message(self, x):
+def alcohol(self, x, counter, message=None):
+    if get_by_name('Piet enjoys alcohol a little to much but he doesn\'t get to have any on the Algebra.', x).found:
+        if counter == 0:
+            return 'Piet seems pretty broke and asks you for a bottle of liquor. You can get him a bottle.\nDo you ' \
+                   'want to do so? [Y/n] '
+        else:
+            if x.a.lower().startswith('y'):
+                get_by_name('Piet is willing to help the player.', x).found = True
+            x.adventure.trigger.remove(self)
+    return True
+
+
+def secret_message(self, x, counter, message=None):
     if get_by_name('There is a message given to the players saying that Matthews is being held on the Algebra.',
                    x).found:
-        print('You find a message in your pocket. Somebody must have smuggled it into there. It says the '
-              'following:\nI, Matthews Joseph Charles of Philsa, son of the duke of Philsa am being held against '
-              'my will on the Algebra. My father would be willing to pay great amounts for my rescue. Please help '
-              'me!!!')
-        x.adventure.trigger.remove(self)
+        if counter == 0:
+            string = \
+                'You find a message in your pocket. Somebody must have smuggled it into there. It says the ' \
+                'following:\nI, Matthews Joseph Charles of Philsa, son of the duke of Philsa am being held against ' \
+                'my will on the Algebra. My father would be willing to pay great amounts for my rescue. Please help ' \
+                'me!!!'
+            x.adventure.trigger.remove(self)
+            return string
     return True
 
 
@@ -225,7 +247,7 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
                    where_to_find=[greg, andrea])
     sec_g = SECRET(name='Any two members of the crew of the Algebra can relieve the guards of the Algebra.',
                    where_to_find=[john, greg, piet, timmy, steve, tom])
-    sec_k = SECRET(name='Piet enjoys alcohol a little to much but he doesn\t get to have any on the Algebra.',
+    sec_k = SECRET(name='Piet enjoys alcohol a little to much but he doesn\'t get to have any on the Algebra.',
                    where_to_find=[piet, andrea])
     # Non-story-secrets:
     sailors_help = {}
@@ -610,6 +632,7 @@ def check_active(object_to_check):
             for i in object_to_check.conditions:
                 object_to_check.active = True
                 for j in i.keys():
+                    # The error caused here is due to the fact, that the captain's conditions haven't fully been decoded
                     if not j.found == i[j]:
                         object_to_check.active = False
                         break

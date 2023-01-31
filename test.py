@@ -10,7 +10,7 @@ import jsonpickle
 
 def write_to_json():  # from jsonlines
     # Does not work!!
-    path = # paste path to files
+    path = 'PATH' # paste path to files
     documents = []
     for i in os.listdir(path):
         if i.endswith('.jsonl'):
@@ -42,7 +42,7 @@ def write_as_jsonlines(key):
     else:
         x = data
     with jsonlines.open(f'{key}.jsonl', 'w') as writer:
-        for i in dicts:
+        for i in x:
             writer.write(i)
     return f'{key}.jsonl'
 
