@@ -403,13 +403,15 @@ class LOCATION:
         if npcs is None or npcs == []:
             npcs = []
             names = ''
+            per_text = ''
         else:
             names = npcs[0].name
+            per_text = f'The following people are at the location: {names}.'
         for i in npcs[1:]:
             names = f'{names}, {i.name}'
         if a is None:
             self.prompt = f'The locationAI describes a location and answers questions about it. The location is a ' \
-                          f'{self.name}.{self.description} The following people are at the location: {names}.' \
+                          f'{self.name}.{self.description} {per_text}' \
                           f'{secret_text}\n\nPerson: What do I see at the location?\nLocationAI: '
         else:
             self.prompt = f'{self.prompt}{a}\nLocationAI: '

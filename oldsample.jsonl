@@ -1,0 +1,352 @@
+{"prompt": "What do I see?\n\n###\n\n", "completion": " info###"}
+{"prompt": "What do I hear?\n\n###\n\n", "completion": " info###"}
+{"prompt": "How does it look?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Do I feel anything?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I go to the table.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I sit down.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I light the candles.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I go to the corner of the room.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I play the game.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I play the piano.\n\n###\n\n", "completion": " action###"}
+{"prompt": "How are you?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I think so too.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I think so.\n\n###\n\n", "completion": " speech"}
+{"prompt": "What have you been doing?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I like John.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I leave the room.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I'm going to the store.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I go to the kitchen.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I go to the tower\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I start a fight.\n\n###\n\n", "completion": " fight###"}
+{"prompt": "I attack him.\n\n###\n\n", "completion": " fight###"}
+{"prompt": "I hit Bettina.\n\n###\n\n", "completion": " fight###"}
+{"prompt": "I slap Albert in the face.\n\n###\n\n", "completion": " fight###"}
+{"prompt": "I end a fight.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I stop fighting.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I give up.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I do not attack him.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I do not attack her.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I have a conversation with someone.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "I talk to Christopher.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "I greet Daniela warmly.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "I end a conversation.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I stop talking.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I don't answer.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use acrobatics.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability acrobatics.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I acrobatics.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use appraise.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability appraise.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I appraise.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use bluff.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability bluff.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I bluff.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use climb.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability climb.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I climb.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use craft.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability craft.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I craft.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use diplomacy.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability diplomacy.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I diplomacy.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use disable device.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability disable device.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I disable device.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use disguise.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability disguise.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I disguise.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use escape artist.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability escape artist.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I escape artist.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use fly.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability fly.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I fly.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use handle animal.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability handle animal.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I handle animal.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use heal.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability heal.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I heal.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use intimidate.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability intimidate.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I intimidate.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (arcana).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (arcana).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (arcana).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (dungeoneering).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (dungeoneering).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (dungeoneering).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (engineering).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (engineering).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (engineering).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (geography).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (geography).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (geography).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (history).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (history).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (history).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (local).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (local).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (local).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (nature).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (nature).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (nature).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (nobility).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (nobility).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (nobility).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (planes).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (planes).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (planes).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use knowledge (religion).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability knowledge (religion).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I knowledge (religion).\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use linguistics.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability linguistics.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I linguistics.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use perception.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability perception.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I perception.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use perform.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability perform.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I perform.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use profession.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability profession.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I profession.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use ride.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability ride.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I ride.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use sense motive.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability sense motive.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I sense motive.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use sleight of hand.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability sleight of hand.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I sleight of hand.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use spellcraft.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability spellcraft.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I spellcraft.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use stealth.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability stealth.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I stealth.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use survival.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability survival.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I survival.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use swim.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability swim.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I swim.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use use magic device.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I try using my ability use magic device.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I use magic device.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Could you please tell me the right way to the church?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I look out the window.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Who the hell are you?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I open the door and enter\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I break the window.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I sit down next to Mama\n\n###\n\n", "completion": " action###"}
+{"prompt": "What else is in the room?\n\n###\n\n", "completion": " info###"}
+{"prompt": "How does the coffee table look?\n\n###\n\n", "completion": " info###"}
+{"prompt": "What colour has the couch?\n\n###\n\n", "completion": " info###"}
+{"prompt": "What else do I see?\n\n###\n\n", "completion": " info###"}
+{"prompt": "What kind of utensils are there?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I take one of the knives.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I talk to thede\n\n###\n\n", "completion": " talk###"}
+{"prompt": "I talk to my father.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "How are you doing dad?\n\n###\n\n", "completion": " speech"}
+{"prompt": "How does the room look?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I talk to Sophie\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Where exactly are Sophie and Papa\n\n###\n\n", "completion": " info###"}
+{"prompt": "I want to burn down the room.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I go outside\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I go out of the room.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I sit down next to the father.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I talk to the robber\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hey man calm down\n\n###\n\n", "completion": " speech"}
+{"prompt": "I give the robber my money\n\n###\n\n", "completion": " action###"}
+{"prompt": "I go into the tavern\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I look at the map\n\n###\n\n", "completion": " action###"}
+{"prompt": "I talk to andrea\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hey Greg\n\n###\n\n", "completion": " speech"}
+{"prompt": "Can I buy you a bottle of rum?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Well thats good for you mate!\n\n###\n\n", "completion": " speech"}
+{"prompt": "That sounds scary.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I talk to the robber.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hey man.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Nothing, nothing, is everything alright?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Well I don't have anything for you\n\n###\n\n", "completion": " speech"}
+{"prompt": "I go into the tavern.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I enter the tavern.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I would like to talk to Andrea\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Tell me your secrets\n\n###\n\n", "completion": " speech"}
+{"prompt": "I give the robber my money.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Thank you.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I talk to Andrea\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Her it is.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I go to the tavern.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "Who else is in the tavern?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I talk to Jack\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hey Jack.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Very good, thank you.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I am looking for a guy called Matthews, have you seen him?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Who else is in the room?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I look at the map.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Hey\n\n###\n\n", "completion": " speech"}
+{"prompt": "I am looking for a guy called Matthews.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I enter the tavern\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I talk to Andrea.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Have you ever heard of a guy called Matthews?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I really need to find him.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Maybe you know something else that could be helpful?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Who is in the tavern?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I talk to John\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hey John, I was wondering if you could help me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Well that happens.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Nothing.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Nah it's alright\n\n###\n\n", "completion": " speech"}
+{"prompt": "How are you today anyways?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I am so sorry. \n\n###\n\n", "completion": " speech"}
+{"prompt": "There is also this girl called Isabella.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I talk to Timmy\n\n###\n\n", "completion": " talk###"}
+{"prompt": "I talk.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hey Jack, how's it going?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I am very sorry.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Oh really? Tell me about your secrets!\n\n###\n\n", "completion": " speech"}
+{"prompt": "Well thanks for telling me your secrets Jack.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I look around in the tavern.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I walk past the robber.\n\n###\n\n", "completion": " action###"}
+{"prompt": "then i turn around and slap the robber in the face.\n\n###\n\n", "completion": " fight###"}
+{"prompt": "How does it look like\n\n###\n\n", "completion": " info###"}
+{"prompt": "I run away and hide in the woods outside the city\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I enter the village.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I talk to John.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Have you ever heard of a girl called Isabella?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I heard you kinda like her.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you like Isabella?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Nice to hear.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Are you in love with Isabella?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Who is in the tavern with me?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I talk to them.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Do you need any kind of help concerning Isabella?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Sure no problem!\n\n###\n\n", "completion": " speech"}
+{"prompt": "Have you ever heard of the duke of Philsa? I heard his son has gone missing.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Well I am looking for him.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Can you tell me anything about the area here?\n\n###\n\n", "completion": " speech"}
+{"prompt": "\tThat is really useful, thanks\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you know anything else about the Algebra?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Everything there is to know!\n\n###\n\n", "completion": " speech"}
+{"prompt": "John, I meant the ship called Algebra.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I talk to Timmy.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hey Timmy.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I was wondering whether you could tell me anything about the Algebra?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Thanks, super nice of you!\n\n###\n\n", "completion": " speech"}
+{"prompt": "I stop talking to Timmy.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Maybe you know something about the crew of the Algebra?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Where could I meet the crew of the Algebra?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you know anything about the local area here?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Thank you so much Jack!\n\n###\n\n", "completion": " speech"}
+{"prompt": "I take away his knife and point it at him!\n\n###\n\n", "completion": " fight###"}
+{"prompt": "What now?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I approach the tavern.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I look at the map more closely.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Look around.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Search for Matthews Joseph Charles of Philsa.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Hello John.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Im perfectly fine. Do you like math?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you know the theorem of pythagoras?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Can you please explain it to me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Can you please explain me the theorem of pythagoras?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I hate you!\n\n###\n\n", "completion": " speech"}
+{"prompt": "Because you like math.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Why?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Why is math important to you?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I love you.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Who is Isabella?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Do you love her?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Do you love isabella?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you want to marry isabella?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I like you at first but now i dont.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Because you love isabella and me. But there can only be one women in your life.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I am done talking to you.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "You are weird.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Yes of course you are!\n\n###\n\n", "completion": " speech"}
+{"prompt": "I wanna find Matthew!\n\n###\n\n", "completion": " speech"}
+{"prompt": "How old are you.\n\n###\n\n", "completion": " info###"}
+{"prompt": "where are you from?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I dont like England.\n\n###\n\n", "completion": " speech"}
+{"prompt": "It is rainy in England.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Who else is in the room with me?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Hello\n\n###\n\n", "completion": " speech"}
+{"prompt": "No\n\n###\n\n", "completion": " speech"}
+{"prompt": "I slap him\n\n###\n\n", "completion": " fight###"}
+{"prompt": "Shut up!\n\n###\n\n", "completion": " action###"}
+{"prompt": "I talk to the Robber.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Then hurt me.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Take my money.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I want to talk to John.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Ok sad.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I want to go to the tavern.\n\n###\n\n", "completion": " room change###"}
+{"prompt": "I want to talk to Isabella.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hello Piet.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you want liquor?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Which kind of liquor?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you like me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I want to talk to Piet.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Hello Piet I love liquor.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you love me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Oh I love you too\n\n###\n\n", "completion": " speech"}
+{"prompt": "But do you love math?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Oh I love math too\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you want to marry me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Why don't you wanna marry me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Excuse me? That was rude!\n\n###\n\n", "completion": " speech"}
+{"prompt": "But do you really love me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "But you did.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Am I one of these few people?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Tell me your secrets!\n\n###\n\n", "completion": " speech"}
+{"prompt": "Tell me the other secrets!\n\n###\n\n", "completion": " action###"}
+{"prompt": "Tell me something about yourself?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I look out for the Robber.\n\n###\n\n", "completion": " action###"}
+{"prompt": "What weapons do I have?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Is water in the sink?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Is there a knife in the kitchen?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Is somebody in the room with me?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Talk to Mama\n\n###\n\n", "completion": " talk###"}
+{"prompt": "Please, I just have a short Question.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I say Hello!\n\n###\n\n", "completion": " talk###"}
+{"prompt": "I saw the lighthouse on that map.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I let the robber alone.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I give you my money in exchange for your secrets.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I go to the robber.\n\n###\n\n", "completion": " talk###"}
+{"prompt": "I want to keep my life!\n\n###\n\n", "completion": " speech"}
+{"prompt": "I leave the robber alone.\n\n###\n\n", "completion": " action###"}
+{"prompt": "But maybe you know some helpful secrets?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Yeah the weather has been great. I was out on the beach yesterday.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I leave my conversation with Jack.\n\n###\n\n", "completion": " action###"}
+{"prompt": "\n\n###\n\n", "completion": " info###"}
+{"prompt": "Hey man, how's it going?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I leave the conversation with John.\n\n###\n\n", "completion": " action###"}
+{"prompt": "I kill the robber.\n\n###\n\n", "completion": " fight###"}
+{"prompt": "Who else was here again?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I need a way to get on the Algebra.\n\n###\n\n", "completion": " speech"}
+{"prompt": "I need to find someone ther.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Its just a ship.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Why is it dangerous?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Well I really need to find it!\n\n###\n\n", "completion": " speech"}
+{"prompt": "This doesn't lead to anything.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Where could I meet them?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I leave Jack alone.\n\n###\n\n", "completion": " action###"}
+{"prompt": "What is your name?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Do you wanna marry me?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I can do kung fu!\n\n###\n\n", "completion": " speech"}
+{"prompt": "Shut up.\n\n###\n\n", "completion": " speech"}
+{"prompt": "Is John here?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Is isabella here?\n\n###\n\n", "completion": " info###"}
+{"prompt": "Ok I will break up, I hate you now!\n\n###\n\n", "completion": " speech"}
+{"prompt": "Ok but why don't you care about me braking up with you?\n\n###\n\n", "completion": " speech"}
+{"prompt": "You are not the man I used to love!\n\n###\n\n", "completion": " speech"}
+{"prompt": "With who are you married?\n\n###\n\n", "completion": " speech"}
+{"prompt": "Tell me other secrets!\n\n###\n\n", "completion": " speech"}
+{"prompt": "Ok\n\n###\n\n", "completion": " speech"}
+{"prompt": "How old are you?\n\n###\n\n", "completion": " speech"}
+{"prompt": "I run.\n\n###\n\n", "completion": " action###"}
+{"prompt": "Could I kill the Robber?\n\n###\n\n", "completion": " info###"}
+{"prompt": "I kill the Robber.\n\n###\n\n", "completion": " fight###"}

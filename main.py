@@ -11,6 +11,19 @@
 # A website
 # easier and with AI written adventures. (Text to code?)
 
+# Analysis:
+# changes places too easily. classifier should take into consideration which places exist.
+#       ?! - not the model but the function maybe
+# assumes speech too often. classifier should take into consideration the prior messages and therefore the context.
+# sometimes the AI already writes the next input of the person, especially during speech. Finetuning would help.
+# Starting conversations via speech leads to confusion.
+# Secrets shouldn't be given to the player multiple times in the log.
+
+# Therefore:
+# retune the classifier using "" for speech.
+# finetune all Answer creating models.
+
+
 import jsonpickle
 import openai
 import random
@@ -27,8 +40,9 @@ client = discord.Client(intents=discord.Intents.default())
 
 
 # model = 'ada:ft-personal-2022-11-27-20-21-30'
-# old fine tuned model = 'ada:ft-personal-2022-11-27-17-16-21'
-# model = ada:ft-personal:input-classifier-2022-12-17-07-32-32
+# very old model = 'ada:ft-personal-2022-11-27-17-16-21'
+# old model = ada:ft-personal:input-classifier-2022-12-17-07-32-32
+# ada:ft-personal:input-classifier-2023-02-10-10-14-50
 # wheremodel = curie:ft-personal:where-2022-12-17-23-05-15
 # whomodel = curie:ft-personal:who-2022-12-17-23-11-02
 
@@ -41,7 +55,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.author == client.user and not message.content == '<game saved>':
+    if message.author == client.user:
         return
     else:
         if not isinstance(message.channel, discord.channel.DMChannel):
@@ -108,9 +122,7 @@ def write_adventure():
 
 
 def main():
-    print('ping')
     client.run(TOKEN)
-    print('ping')
     # write_to_json()  # Error!
     # test()
     trigger = [adventure_structure.prolouge, adventure_structure.on_the_algebra, adventure_structure.boss_fight,
@@ -511,7 +523,7 @@ class GAME:
                 self.scene.location.describe(npcs=self.scene.npcs)
                 return answer
             else:
-                return self.scene.location.describe(npcs=self.scene.npcs)
+                return self.secret_finder(self.scene.location.describe(npcs=self.scene.npcs))
         # This is running scene:
         self.a = input
         self.sort = classify(self.a, analyse)
@@ -523,6 +535,7 @@ class GAME:
         if isinstance(answer, bool):
             if answer:
                 answer = master_types[self.sort]()
+                answer = self.secret_finder(answer)
         if not self.running_scene:
             for i in self.scene.secrets:
                 if i.name == "won":
@@ -553,7 +566,7 @@ class GAME:
             self.sort = None
             # commands: take back, inventory and secrets, hint, help, describe scene (analyse), /mastertype a
             self.check_for_trigger()  # Is this really needed?
-            print(self.scene.location.describe(npcs=self.scene.npcs))
+            print(self.secret_finder(self.scene.location.describe(npcs=self.scene.npcs)))
             while self.running_scene:
                 self.a = input('<please enter:> ')
                 self.sort = classify(self.a, analyse)
@@ -564,6 +577,7 @@ class GAME:
                 if self.check_for_trigger():  # trigger are (too?) Tricky to convert for dc_play()
                     # Maybe right now running trigger could be checked with another clause.
                     answer = master_types[self.sort]()
+                    answer = self.secret_finder(answer)
                     print(answer)
             for i in self.scene.secrets:
                 if i.name == "won":
@@ -593,26 +607,35 @@ class GAME:
                     print(f'(Devtool) secret: {i.name}')
         if len(secrets) == 0:
             secrets = None
-        if isinstance(self.object_of_interest, adventure_structure.LOCATION):
-            response = self.object_of_interest.describe(self.a, secrets=secrets)
-        else:
-            response = ''
-            print('(Devtool) Error action line 195ish')
-        if secrets is not None:
-            for i in secrets:
-                prompt = f'{response}\n\nWas the following secret told in the text above?\nSecret: {i.description}\n\nYes or no?\n'
-                mentioned = openai.Completion.create(model='text-davinci-003',
-                                                     prompt=prompt, temperature=0, max_tokens=1, )
-                mentioned = mentioned['choices'][0]['text']
-                if mentioned.lower().startswith('y'):
-                    print(f'(Devtool) Secret {i.name} was found.')
-                    response = f'{response}\n\n<You found an important piece of information: {i.name}>'
-                    i.found = True
-                elif mentioned.lower().startswith('n'):
-                    i.found = False
-                else:
-                    print('(Devtool) Error secret mentioned? Line 222ish.')
-                    i.found = False
+        return self.object_of_interest.describe(self.a, secrets=secrets)
+
+    def secret_finder(self, response):
+        # save for future trainingsdata !!
+        secrets = []
+        for i in self.scene.secrets:
+            if self.object_of_interest in i.where_to_find:
+                if random.random() > 0:
+                    secrets.append(i)
+                    print(f'(Devtool) secret: {i.name}')
+        for i in secrets:
+            prompt = f'Secret: {i.name}\nText: {response}\n\nAnswer:'
+            mentioned = openai.Completion.create(model='davinci:ft-personal:secret-finder-2023-02-02-05-34-08',
+                                                 prompt=prompt, temperature=0, max_tokens=5, stop='###')
+            mentioned = mentioned['choices'][0]['text']
+            if mentioned == '':
+                print('Secret finder gave no output.')
+            if mentioned[0] == ' ':
+                mentioned = mentioned[1:]
+            if mentioned.lower().startswith('y'):
+                print(f'(Devtool) Secret {i.name} was found.')
+                response = f'{response}\n\n<You found an important piece of information: {i.name}>'
+                i.found = True
+            elif mentioned.lower().startswith('n'):
+                i.found = False
+            else:
+                print('(Devtool) Error secret mentioned? Line 222ish.')
+                print(f'"{prompt}"+"{mentioned}"')
+                i.found = False
         return response
 
     def speech(self):
@@ -630,21 +653,6 @@ class GAME:
         if len(secrets) == 0:
             secrets = None
         response = self.object_of_interest.talk(self.a, secrets=secrets)
-        if secrets is not None:
-            for i in secrets:
-                prompt = f'{response}\n\nWas the following secret told in the text above?\nSecret: {i.description}\n\nYes or no?\n\n'
-                mentioned = openai.Completion.create(model='text-davinci-003',
-                                                     prompt=prompt, temperature=0, max_tokens=1)
-                mentioned = mentioned['choices'][0]['text']
-                if mentioned.lower().startswith('y'):
-                    print(f'(Devtool) Secret {i.name} was found.')
-                    response = f'{response}\n\n<You found an important piece of information: {i.name}>'
-                    i.found = True
-                elif mentioned.lower().startswith('n'):
-                    i.found = False
-                else:
-                    print(f'(Devtool) Error secret mentioned? Line 222ish. Mentioned: "{mentioned}".')
-                    i.found = False
         return response
 
     def room_change(self):
@@ -667,7 +675,9 @@ class GAME:
 
 def classify(a, analyse):
     prompt = f'{a}\n\n###\n\n'
-    response = openai.Completion.create(model='ada:ft-personal:input-classifier-2022-12-17-07-32-32',
+    #
+    # ada:ft-personal:input-classifier-2022-12-17-07-32-32
+    response = openai.Completion.create(model='ada:ft-personal:input-classifier-2023-02-10-10-14-50',
                                         prompt=prompt, temperature=0, max_tokens=12, stop="###")
     response = response['choices'][0]['text']
     with open('data.json', 'r') as f:
@@ -724,6 +734,7 @@ def where(a, adventure):
     names = []
     name_dict = {}
     for i in adventure.major_locations:
+        adventure_structure.check_active(i)
         if i.active:
             names.append(i.name)
             name_dict.update({i.name.lower(): i})
@@ -758,8 +769,8 @@ def write_as_jsonlines(key):
     with open('data.json') as f:
         data = json.load(f)[key]
     if isinstance(data, dict):
-        for i in data[key].keys():
-            x.append({'prompt': i, 'completion': data[key][i]})
+        for i in data.keys():
+            x.append({'prompt': i, 'completion': data[i]})
     else:
         x = data
     with jsonlines.open(f'{key}.jsonl', 'w') as writer:

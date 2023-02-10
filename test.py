@@ -6,6 +6,76 @@ import textwrap
 import main
 import adventure_structure
 import jsonpickle
+import openai
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+
+def write_trainingsdata_for_secretrecognition():
+    secrets = [
+        "The key to the hidden chamber lies in the darkest corner of the castle.",
+        "A powerful magical artifact lies buried in the catacombs beneath the city.",
+        "A mysterious stranger holds the knowledge to unlocking the ancient ruins.",
+        "An evil cult has been gathering strength deep in the forest.",
+        "The final resting place of a powerful mage is hidden in a mountain cave.",
+        "An ancient tome holds the secrets to a powerful spell.",
+        "A cursed object is hidden in an old temple.",
+        "A secret passage leads to the throne room of a long-lost kingdom.",
+        "A powerful artifact is hidden in the depths of an underground maze.",
+        "The entrance to a mysterious realm lies in a forgotten corner of the world.",
+        "A powerful wizard is planning to unleash a great evil upon the world.",
+        "An ancient dragon is asleep in a hidden cave, awaiting the day it will be freed.",
+        "A lost continent lies beneath the waves, waiting to be discovered.",
+        "A powerful weapon lies hidden in the depths of a mysterious temple.",
+        "A powerful magical artifact is locked away in a forgotten vault.",
+        "A powerful artifact is hidden in the depths of an enchanted forest.",
+        "An evil cult is seeking to unlock the secrets of a powerful magical artifact.",
+        "A powerful magical artifact lies in the center of a dark and dangerous dungeon.",
+        "A powerful artifact lies in the heart of a forbidden city.",
+        "A mysterious cult is seeking to awaken a powerful being from its slumber.",
+        "A powerful magical artifact is hidden in the deepest part of a cursed forest.",
+        "An ancient ritual is needed to unlock the power of a powerful artifact.",
+        "A powerful magical artifact is hidden in the depths of the ocean.",
+        "An evil sorcerer is plotting to take control of the kingdom.",
+        "A powerful magical artifact is locked away in an ancient temple.",
+        "An ancient race of creatures is hidden deep in the forest.",
+        "A powerful artifact is hidden in an ancient tomb.",
+        "A powerful artifact is locked away in a secret chamber.",
+        "An ancient and powerful artifact is hidden in an abandoned castle.",
+        "A powerful magical artifact is locked away in a forgotten keep.",
+        "An evil necromancer is plotting to raise an army of undead.",
+        "An ancient artifact is hidden in a temple of forgotten gods.",
+        "A powerful magical artifact is hidden in the depths of a forgotten dungeon.",
+        "An evil cult is seeking to gain control of a powerful magical artifact.",
+        "A powerful magical artifact is hidden in a hidden cavern.",
+        "A powerful magical artifact is locked away in a sacred temple.",
+        "An ancient ritual is needed to unlock the power of a powerful magical artifact.",
+        "A powerful magical artifact is hidden in a secret laboratory.",
+        "A powerful magical artifact is hidden in an ancient ruin.",
+        "An evil sorcerer is plotting to use a powerful magical artifact to take control of the kingdom.",
+    ]
+    prompt = ''
+    full_dict = {}
+    for i in secrets:
+        prompt = f'{i}\n\nWrite a persons direct speech telling someone else about this secret indirectly.\n\n"'
+        response = openai.Completion.create(model='text-davinci-003', prompt=prompt, temperature=1, max_tokens=250)
+        response = response['choices'][0]['text']
+        if response[-1] == '"':
+            response = response[:-1]
+        else:
+            print(response)
+        for j in secrets:
+            if i != j:
+                if random.random() > 0.85:
+                    full_dict.update({f'Secret: {j}\nText: {response}\n\nAnswer: \n\n###\n\n': 'N###'})
+            else:
+                full_dict.update({f'Secret: {j}\nText: {response}\n\nAnswer: \n\n###\n\n': 'Y###'})
+    with open('data.json') as f:
+        data = json.load(f)
+    data.update({'secret sample': full_dict})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    print(write_as_jsonlines('secret sample'))
 
 
 def write_to_json():  # from jsonlines
@@ -31,20 +101,46 @@ def write_to_json():  # from jsonlines
         json.dump(full_dict, out_file, indent=4)
 
 
+def write_single_file_to_json(file):
+    file_dict = {}
+    with jsonlines.open(file, 'r') as reader:
+        for j in reader.iter(type=dict):
+            if file.startswith('input') or file == 'sample.jsonl' or file.startswith('wh') or file.startswith('new') or file.startswith('secret_sample'):
+                file_dict.update({j['prompt']: j['completion']})
+            else:
+                file_dict.update(j)
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    data.update({file[:-6]: file_dict})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
+
+
 def write_as_jsonlines(key):
     path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
     x = []
     with open('data.json') as f:
         data = json.load(f)[key]
     if isinstance(data, dict):
-        for i in data[key].keys():
-            x.append({'prompt': i, 'completion': data[key][i]})
+        for i in data.keys():
+            x.append({'prompt': i, 'completion': data[i]})
     else:
         x = data
     with jsonlines.open(f'{key}.jsonl', 'w') as writer:
         for i in x:
             writer.write(i)
     return f'{key}.jsonl'
+
+
+def rewrite_sec_sample():
+    x = []
+    with jsonlines.open('secret_sample_prepared.jsonl', 'r') as reader:
+        for line in reader:
+            new_line = {'prompt': line['prompt'][:-8], 'completion': line['completion']}
+            x.append(new_line)
+    with jsonlines.open('secret_sample.jsonl', 'w') as writer:
+        for i in x:
+            writer.write(i)
 
 
 def create_newsample(*keys):
@@ -268,8 +364,24 @@ def save_game_to_json():
     print(g.adventure.major_secrets[0].name)
 
 
+def rewrite_classifier_sample():
+    x = []
+    with jsonlines.open('sample.jsonl', 'r') as reader:
+        for line in reader:
+            x.append(line)
+    for line in x:
+        if not line['completion'].endswith('###'):
+            line['completion'] = f'{line["completion"]}###'
+    newlist = sorted(x, key=lambda d: d['completion'])
+    with jsonlines.open('sample.jsonl', 'w') as writer:
+        writer.write_all(newlist)
+
+
 # write_to_json()
-# write_as_jsonlines('sample')
+# write_as_jsonlines('secret sample')
 # create_newsample('sample', 'inputs_correct', 'inputs_correct2',)
 # write_to_json()
-save_game_to_json()
+# write_trainingsdata_for_secretrecognition()
+# rewrite_sec_sample()
+write_single_file_to_json('sample.jsonl')
+# rewrite_classifier_sample()
