@@ -366,9 +366,22 @@ def save_game_to_json():
 
 def rewrite_classifier_sample():
     x = []
+    y = []
+    dicti = {'i': 'info', 't': 'talk', 's': 'speech', 'f': 'fight', 'r': 'room change', 'a': 'action'}
     with jsonlines.open('sample.jsonl', 'r') as reader:
         for line in reader:
             x.append(line)
+    with jsonlines.open('temp.jsonl', 'r') as reader:
+        for line in reader:
+            y.append(line)
+    for line in y:
+        print(dicti.values())
+        line['prompt'] = f'{line["prompt"][1:-8]}'
+        line['completion'] = ' ' + dicti[input(line['prompt']+" ")] + '###'
+        line['prompt'] = f'{line["prompt"]}\n\n###\n\n'
+        print(line)
+    for line in y:
+        x.append(line)
     for line in x:
         if not line['completion'].endswith('###'):
             line['completion'] = f'{line["completion"]}###'
@@ -383,5 +396,5 @@ def rewrite_classifier_sample():
 # write_to_json()
 # write_trainingsdata_for_secretrecognition()
 # rewrite_sec_sample()
-write_single_file_to_json('sample.jsonl')
-# rewrite_classifier_sample()
+# write_single_file_to_json('sample.jsonl')
+rewrite_classifier_sample()

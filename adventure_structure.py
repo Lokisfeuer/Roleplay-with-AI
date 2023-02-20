@@ -368,7 +368,7 @@ class NPC:
             prompt = f'{prompt}{self.former_inputs[i]}\n{self.name}: {self.former_answers[i]}\n\nPerson: '
         prompt = f'{prompt}{a}\n{self.name}: '  # logical error, Person: I talk to the bartender.
         response = openai.Completion.create(model="text-davinci-002", prompt=prompt, temperature=0.4,
-                                            max_tokens=100)
+                                            max_tokens=100, stop='Person:')
         response = response['choices'][0]['text']
         self.former_inputs.append(a)
         self.former_answers.append(response)
@@ -386,10 +386,10 @@ class LOCATION:
         if description is None:
             self.description = ''
         else:
-            if description[0] == ' ':
+            if description[0] == '\n':
                 self.description = description
             else:
-                self.description = ' ' + description
+                self.description = '\n' + description
         self.prompt = ''
         check_active(self)
 
@@ -406,17 +406,18 @@ class LOCATION:
             per_text = ''
         else:
             names = npcs[0].name
-            per_text = f'The following people are at the location: {names}.'
-        for i in npcs[1:]:
-            names = f'{names}, {i.name}'
+            for i in npcs[1:]:
+                names = f'{names}, {i.name}'
+            per_text = f'\nThe following people are at the location: {names}.'
         if a is None:
             self.prompt = f'The locationAI describes a location and answers questions about it. The location is a ' \
-                          f'{self.name}.{self.description} {per_text}' \
-                          f'{secret_text}\n\nPerson: What do I see at the location?\nLocationAI: '
+                          f'{self.name}.{self.description}{per_text}' \
+                          f'{secret_text}\n\nPerson: What do I see at the location?\nLocationAI: ' # trailing space )-:
         else:
             self.prompt = f'{self.prompt}{a}\nLocationAI: '
+        # This prompt sometimes leads to no answer based on prior not answering.
         response = openai.Completion.create(model="text-davinci-002", prompt=self.prompt, temperature=0.8,
-                                            max_tokens=256)
+                                            max_tokens=256, stop='Person')
         response = response['choices'][0]['text']
         self.prompt = f'{self.prompt}{response}\n\nPerson: '
         return response

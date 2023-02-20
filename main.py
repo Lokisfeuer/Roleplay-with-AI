@@ -12,16 +12,32 @@
 # easier and with AI written adventures. (Text to code?)
 
 # Analysis:
-# changes places too easily. classifier should take into consideration which places exist.
-#       ?! - not the model but the function maybe
+# changes places too easily.
+# classifier should take into consideration which places exist. ?! - not the model but the function maybe
 # assumes speech too often. classifier should take into consideration the prior messages and therefore the context.
-# sometimes the AI already writes the next input of the person, especially during speech. Finetuning would help.
+# sometimes the AI already writes the next input of the person, especially during speech.
+#   finetuning would help. improving prompt to write precisley one message would be easier.
 # Starting conversations via speech leads to confusion.
 # Secrets shouldn't be given to the player multiple times in the log.
 
 # Therefore:
 # retune the classifier using "" for speech.
 # finetune all Answer creating models.
+
+# result:
+# still assumes speech to often and without "".
+
+
+# ideas for improvement:
+
+# for the speeches that could be info questions add them without "" and as info to the sample.
+# always keep the player in the game, never let them guess what to write now. (like game saved or so on.)
+
+# add a /adventure/room/object_of_interest to every message.
+# make important piece of info just one time findable
+# update the answer creating model prompts to not already write the next users input. - done, - test it.
+# DON'T START RANDOM CONVERSATIONS VIA SPEECH. (Instead do what???)
+# ? maybe change classifier function to check for places that exists and consider it action otherwise. DON'T MOVE RANDOM
 
 
 import jsonpickle
@@ -45,6 +61,21 @@ client = discord.Client(intents=discord.Intents.default())
 # ada:ft-personal:input-classifier-2023-02-10-10-14-50
 # wheremodel = curie:ft-personal:where-2022-12-17-23-05-15
 # whomodel = curie:ft-personal:who-2022-12-17-23-11-02
+
+
+def main():
+    client.run(TOKEN)
+    # write_to_json()  # Error!
+    # test()
+    trigger = [adventure_structure.prolouge, adventure_structure.on_the_algebra, adventure_structure.boss_fight,
+               adventure_structure.at_the_algebra, adventure_structure.won, adventure_structure.loveletter,
+               adventure_structure.money, adventure_structure.alcohol, adventure_structure.secret_message]
+    adventure_structure.the_drowned_aboleth(*trigger)
+    # game, username = login()
+    # game.play(username=username)
+    # adventure, conditions = adventure_structure.the_drowned_aboleth()
+    # GAME(adventure=adventure, conditions=conditions).play()
+    pass
 
 
 # This is the attempt to set up a discord bot via which one can play adventures. (It does not work (yet).)
@@ -91,49 +122,20 @@ async def on_message(message):
                 data['players'][message.author.name][adventure].append(jsonpickle.encode(game, keys=True))
                 with open('data.json', 'w') as f:
                     json.dump(data, f, indent=4)
+                if not answer.startswith('\n\n'):
+                    answer = '\n\n' + answer
+                answer = f'Devtool: {adventure}/{game.scene.location.name}/{game.object_of_interest.name}{answer}'
             else:
                 answer = await dc_login(message)
         else:
             answer = await dc_login(message)
-
         print('on_message is through')
         if answer == '' or answer is None:
-            answer = '<game saved>'
+            answer = '<game saved>\nAsk, what you see.'
         await message.channel.send(answer)
 
 
-def write_adventure():
-    object_dict = {'npcs': {}, 'locations': {}, 'secrets': {}, 'trigger': {}}
-    print(f'Please enter all your npcs, locations, secrets and trigger. When you are done with one just type "/next"')
-    for i in object_dict.keys():
-        a = input(f'({i}) <please enter:> ')
-        while not a.startswith('/'):
-            object_dict[i].update({a: []})
-            a = input('<please enter:> ')
-        print('now please enter all locations or if you already did that all secrets')
-        for i in object_dict['secrets'].keys():
-            print(f'Where can the secret "{i}"be found? Enter all locations and npcs. When you are done just type '
-                  f'"/next"')
-            a = input(f'({i}) <please enter:> ')
-            while not a.startswith('/'):
-                # ask for closest match in object_dict
-                object_dict['secrets'][i].append(a)
-                a = input('<please enter:> ')
 
-
-def main():
-    client.run(TOKEN)
-    # write_to_json()  # Error!
-    # test()
-    trigger = [adventure_structure.prolouge, adventure_structure.on_the_algebra, adventure_structure.boss_fight,
-               adventure_structure.at_the_algebra, adventure_structure.won, adventure_structure.loveletter,
-               adventure_structure.money, adventure_structure.alcohol, adventure_structure.secret_message]
-    adventure_structure.the_drowned_aboleth(*trigger)
-    # game, username = login()
-    # game.play(username=username)
-    # adventure, conditions = adventure_structure.the_drowned_aboleth()
-    # GAME(adventure=adventure, conditions=conditions).play()
-    pass
 
 
 async def dc_login(message):
@@ -526,7 +528,7 @@ class GAME:
                 return self.secret_finder(self.scene.location.describe(npcs=self.scene.npcs))
         # This is running scene:
         self.a = input
-        self.sort = classify(self.a, analyse)
+        self.sort = classify(self.a, self.adventure, analyse)
         master_types = {'info': self.info, 'talk': self.talk, 'speech': self.speech, 'fight': self.fight,
                         'room change': self.room_change, 'action': self.action}
         if self.sort not in master_types.keys():
@@ -569,7 +571,7 @@ class GAME:
             print(self.secret_finder(self.scene.location.describe(npcs=self.scene.npcs)))
             while self.running_scene:
                 self.a = input('<please enter:> ')
-                self.sort = classify(self.a, analyse)
+                self.sort = classify(self.a, self.adventure, analyse)
                 master_types = {'info': self.info, 'talk': self.talk, 'speech': self.speech, 'fight': self.fight,
                                 'room change': self.room_change, 'action': self.action}
                 if self.sort not in master_types.keys():
@@ -614,9 +616,10 @@ class GAME:
         secrets = []
         for i in self.scene.secrets:
             if self.object_of_interest in i.where_to_find:
-                if random.random() > 0:
-                    secrets.append(i)
-                    print(f'(Devtool) secret: {i.name}')
+                if not i.found:
+                    if random.random() > 0:
+                        secrets.append(i)
+                        print(f'(Devtool) secret: {i.name}')
         for i in secrets:
             prompt = f'Secret: {i.name}\nText: {response}\n\nAnswer:'
             mentioned = openai.Completion.create(model='davinci:ft-personal:secret-finder-2023-02-02-05-34-08',
@@ -630,12 +633,11 @@ class GAME:
                 print(f'(Devtool) Secret {i.name} was found.')
                 response = f'{response}\n\n<You found an important piece of information: {i.name}>'
                 i.found = True
-            elif mentioned.lower().startswith('n'):
-                i.found = False
-            else:
-                print('(Devtool) Error secret mentioned? Line 222ish.')
-                print(f'"{prompt}"+"{mentioned}"')
-                i.found = False
+            with open('data.json', 'r') as f:
+                data = json.load(f)
+            data['newsecret_sample'].update({prompt: ' ' + response + '###'})
+            with open('data.json', 'w') as f:
+                json.dump(data, f, indent=4)
         return response
 
     def speech(self):
@@ -643,6 +645,13 @@ class GAME:
             if len(self.scene.npcs) == 0:
                 return 'There is no interesting character to talk to.'
             person = who(self.a, self.scene)
+            if person == 'could not find':
+                names = self.scene.npcs[0].name
+                if not len(self.scene.npcs) == 1:
+                    names = names + ' and '
+                    for i in self.scene.npcs[1:]:
+                        names = f'{names}{i.name}, '
+                return f'Who do you intent to talk to? The following characters are in the room: {names[:-2]}'
             self.object_of_interest = person
         secrets = []
         for i in self.scene.secrets:
@@ -660,6 +669,7 @@ class GAME:
         # NPC conditions should explicitly exclude the ones from the last scene.
         self.conditions = [loc, [None]]
         self.running_scene = False
+        return f'You are going to the {loc.name}.'
 
     def fight(self):
         return 'Fighting does not yet work.'
@@ -668,25 +678,32 @@ class GAME:
         if len(self.scene.npcs) == 0:
             return 'There is no interesting character to talk to.'
         person = who(self.a, self.scene)
+        if person == 'could not find':
+            names = self.scene.npcs[0].name
+            if not len(self.scene.npcs) == 1:
+                names = names + ' and '
+                for i in self.scene.npcs[1:]:
+                    names = f'{names}{i.name}, '
+            return f'Who do you intent to talk to? The following characters are in the room: {names[:-2]}'
         self.object_of_interest = person
         return f'You are talking to {person.name}. {self.object_of_interest.talk(self.a, secrets=None)}'
 
 
-
-def classify(a, analyse):
+def classify(a, adventure, analyse):
     prompt = f'{a}\n\n###\n\n'
-    #
-    # ada:ft-personal:input-classifier-2022-12-17-07-32-32
     response = openai.Completion.create(model='ada:ft-personal:input-classifier-2023-02-10-10-14-50',
                                         prompt=prompt, temperature=0, max_tokens=12, stop="###")
     response = response['choices'][0]['text']
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-    data['sample'].update({prompt: response + '###'})
-    with open('data.json', 'w') as f:
-        json.dump(data, f, indent=4)
     if response[0] == ' ':
         response = response[1:]
+    if response == 'room change':
+        if where(a, adventure) == 'could not find':
+            response = 'action'
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    data['newsample'].update({prompt: ' ' + response + '###'})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
     return response
 
 
@@ -725,9 +742,7 @@ def who(a, scene):
         if response in names:
             return name_dict[response.lower()]
         else:
-            person = random.choice(scene.npcs)
-            print(f'I did not understand that. You are now talking to {person.name}')
-            return person
+            return 'could not find'
 
 
 def where(a, adventure):
