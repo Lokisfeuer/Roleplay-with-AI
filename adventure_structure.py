@@ -85,7 +85,7 @@ def at_the_algebra(self, x, counter, message=None):
             sailors_helping = 0
             names = ''
             sailors_help = {}
-            for i in []:
+            for i in ['Michael', 'John', 'Piet', 'Greg']:
                 sailors_help.update(
                     {get_by_name(i, x): get_by_name(f'{get_by_name(i, x).name} is willing to help the player.', x)})
             for i in sailors_help.keys():
@@ -99,7 +99,7 @@ def at_the_algebra(self, x, counter, message=None):
             if sailors_helping > 1:
                 if counter == 0:
                     return f'{names[2:]} could relieve the guards and let you on bord of the Algebra.\nShould they do so? [Y/n]'
-                elif counter == 1 and x.a.lower.startswith('y'):
+                elif counter == 1 and x.a.lower().startswith('y'):
                     get_by_name('Guards relieved.', x).found = True
                     return f'You can now proceed to the Algebra.'
     return True
@@ -143,9 +143,13 @@ def alcohol(self, x, counter, message=None):
             return 'Piet seems pretty broke and asks you for a bottle of liquor. You can get him a bottle.\nDo you ' \
                    'want to do so? [Y/n] '
         else:
-            if x.a.lower().startswith('y'):
-                get_by_name('Piet is willing to help the player.', x).found = True
-            x.adventure.trigger.remove(self)
+            if self in x.adventure.trigger:
+                x.adventure.trigger.remove(self)
+                if x.a.lower().startswith('y'):
+                    get_by_name('Piet is willing to help the player.', x).found = True
+                    return 'Piet thanks you very much. If you ever need anything from him, he is happy to help.'
+                else:
+                    return 'You do not give Piet a bottle.'
     return True
 
 
@@ -220,8 +224,8 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
                                            'bay is full with more or less valuable treasury.',
                    conditions=[{sec_bay: True}])
     pier = LOCATION(name='pier', description='There is only a single vessel in the pier. It is the Algebra, '
-                                             'a big sailing vessel with three masts. Two guards are standing in front '
-                                             'of it, allowing nobody to enter who is not part of the crew.')
+                                             'a big sailing vessel with three masts. If they are here Tom and Jerry'
+                                             'are guarding the Algebra.')
     ship = LOCATION(name='Algebra',
                     description='The Algebra is a big sailing vessel. It\'s got three masts. On the main deck is a'
                                 'huge steering wheel and a hatch to go below deck.',
@@ -265,6 +269,8 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
     sec_won = SECRET(name='Won', where_to_find=[])
     # relevance=1, positive=True, found=False, conditions=None, description={}
 
+    triggerfunctions = [prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol, secret_message]
+
     trig_a = TRIGGER(when_triggered=[inside_ship, ship], function=on_the_algebra)
     trig_b = TRIGGER(when_triggered=[captain], function=boss_fight)
     trig_c = TRIGGER(when_triggered=[pier], function=at_the_algebra)
@@ -277,16 +283,20 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
     prolouge = TRIGGER(when_triggered=[streets], function=prolouge)
 
     npcs = [john, jack, isabella, michael, andrea, greg, captain, piet, timmy, matthews, robber, steve, tom]
-    locations = [streets, tavern, lighthouse, bay, ship, inside_ship]
+    locations = [streets, tavern, lighthouse, bay, ship, inside_ship, pier]
     secrets = [sec_a, sec_b, sec_c, sec_d, sec_e, sec_f, sec_g, sec_h, sec_i, sec_j, sec_k, sec_won, sec_false,
                sec_lighthouse, sec_bay]
     secrets.extend(sailors_help.values())
     trigger = [prolouge, trig_a, trig_b, trig_c, trig_d, loveletter, money, alcohol, secret_message]
     starting_conditions = [streets, [robber]]
 
+    trigger_dict = {}
+    for trigger, function in zip(trigger, triggerfunctions):
+        trigger_dict.update({trigger: function})
+
     name = 'the drowned aboleth'
-    adventure = ADVENTURE(name=name, major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger=trigger,
-                          actionrelevance=0)
+    adventure = ADVENTURE(name=name, major_npcs=npcs, major_locations=locations, major_secrets=secrets,
+                          actionrelevance=0, trigger_dict=trigger_dict)
     with open('data.json', 'r') as f:
         data = json.load(f)
     data['adventures'].update({name: {'adventure': jsonpickle.encode(adventure, keys=True),
@@ -530,10 +540,14 @@ class TRIGGER:
         self.function = function
         pass
 
+    def call(self, adventure, *args, **kwargs):
+        function = adventure.trigger_dict[self]
+        return function(*args, **kwargs)
+
 
 class ADVENTURE:  # To do: differ between active and inactive locations, npcs and secrets
     def __init__(self, name, setting=None, major_npcs=None, major_locations=None, major_secrets=None, actions=None,
-                 trigger=None, actionrelevance=1, difficultyrelevance=1, hoperelevance=1):
+                 trigger_dict=None, actionrelevance=1, difficultyrelevance=1, hoperelevance=1):
         self.name = name
         self.seed = None
         if isinstance(setting, SETTING):
@@ -556,10 +570,12 @@ class ADVENTURE:  # To do: differ between active and inactive locations, npcs an
             self.actions = []
         else:
             self.actions = actions
-        if trigger is None:
+        if trigger_dict is None:
             self.trigger = []
+            self.trigger_dict = {}
         else:
-            self.trigger = trigger
+            self.trigger_dict = trigger_dict
+            self.trigger = list(self.trigger_dict.keys())
         self.actionrelevance = actionrelevance
         self.difficultyrelevance = difficultyrelevance
         self.hoperelevance = hoperelevance
@@ -691,3 +707,7 @@ def evaluate_getinputs(former_scenes, adventure):  # former_scenes[0] is the old
     # except:
     # print("Something went wrong (evaluate_getinputs) <!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!><!>")
     # return
+
+
+trigger = [prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol, secret_message]
+adventure, conditions = the_drowned_aboleth(*trigger)

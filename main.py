@@ -40,6 +40,14 @@
 # ? maybe change classifier function to check for places that exists and consider it action otherwise. DON'T MOVE RANDOM
 
 
+
+
+# THE NEW IMPORTANT THINGY:
+
+# Ship cannot be entered even after guards are relived.
+
+
+
 import jsonpickle
 import openai
 import random
@@ -64,13 +72,15 @@ client = discord.Client(intents=discord.Intents.default())
 
 
 def main():
-    client.run(TOKEN)
-    # write_to_json()  # Error!
-    # test()
     trigger = [adventure_structure.prolouge, adventure_structure.on_the_algebra, adventure_structure.boss_fight,
                adventure_structure.at_the_algebra, adventure_structure.won, adventure_structure.loveletter,
                adventure_structure.money, adventure_structure.alcohol, adventure_structure.secret_message]
-    adventure_structure.the_drowned_aboleth(*trigger)
+    adventure, conditions = adventure_structure.the_drowned_aboleth(*trigger)
+    # check the triggers for their functions.
+    # adventure.trigger[0].call(adventure, adventure.trigger[0], 'game_object', 0)
+    client.run(TOKEN)
+    # write_to_json()  # Error!
+    # test()
     # game, username = login()
     # game.play(username=username)
     # adventure, conditions = adventure_structure.the_drowned_aboleth()
@@ -105,20 +115,22 @@ async def on_message(message):
                 pickled_object = data['players'][message.author.name][adventure][-1]
                 game = jsonpickle.decode(pickled_object, keys=True)
                 if game.triggering is None:
-                    answer = game.dc_play(message.content)
+                    answer = game.dc_play(message.content, username=username)
                 else:
                     game.a = message.content
                     # There are likely other game.variables that need to be updated here as well
-                    answer = game.triggering.function(game.triggering, game, game.trigger_counter, message=message)
+                    answer = game.triggering.call(game.adventure, game.triggering, game, game.trigger_counter, message=message)
                     if isinstance(answer, bool):
                         game.triggering = None
                         game.trigger_counter = 0
                         if answer:
-                            answer = game.dc_play(message.content)
+                            answer = game.dc_play(message.content, username=username)
                         else:
                             answer = 'please enter'
                     else:
                         game.trigger_counter = game.trigger_counter + 1
+                with open('data.json', 'r') as f:
+                    data = json.load(f)
                 data['players'][message.author.name][adventure].append(jsonpickle.encode(game, keys=True))
                 with open('data.json', 'w') as f:
                     json.dump(data, f, indent=4)
@@ -135,9 +147,6 @@ async def on_message(message):
         await message.channel.send(answer)
 
 
-
-
-
 async def dc_login(message):
     with open('data.json', 'r') as f:
         data = json.load(f)
@@ -149,7 +158,6 @@ async def dc_login(message):
         if username not in data['players'].keys():
             answer = answer + 'You are not registered yet. An account with your username is being created.'
             data['players'].update({username: {}})
-            pass
         else:
             answer = answer + 'Resetting...'
         data['players'][username].update({'fetching game': True})
@@ -174,9 +182,10 @@ async def dc_login(message):
                 if adventure not in data['players'][username].keys():
                     data['players'][username].update({adventure: [jsonpickle.encode(game, keys=True)]})
                 data['players'][username].update({'recent adventure': adventure})
-                answer = f'You are logged in as {username} and are playing the adventure {adventure}.\n\n'
+                answer = f'You are logged in as {username} and are playing the adventure {adventure}.\n' \
+                         f'Send anything to continue.'
                 print(answer)
-                # answer = answer + game.dc_play('Please describe the Situation.')
+                # answer = answer + game.dc_play('Please describe the Situation.', username=username)
             else:
                 data['players'][username].update({'fetching game': True})
                 answer = 'That did not work. Please (re-)enter the name or number of the adventure you want to ' \
@@ -379,11 +388,11 @@ class GAME:
                         triggered = True
             if triggered:
                 self.triggering = i
-                answer = i.function(i, self, self.trigger_counter)
+                answer = i.call(self.adventure, i, self, self.trigger_counter)
                 while self.triggering == i and not isinstance(answer, bool):
                     self.trigger_counter = self.trigger_counter + 1
                     self.a = input(answer)
-                    answer = i.function(i, self, self.trigger_counter)
+                    answer = i.call(self.adventure, i, self, self.trigger_counter)
                 self.triggering = None
                 self.trigger_counter = 0
                 back.append(answer)
@@ -496,9 +505,15 @@ class GAME:
                         triggered = True
             if triggered:
                 self.triggering = i
-                answer = i.function(i, self, self.trigger_counter)
-                self.trigger_counter = self.trigger_counter + 1
-                return answer
+                answer = i.call(self.adventure, i, self, self.trigger_counter)
+                if not isinstance(answer, bool):
+                    self.trigger_counter = self.trigger_counter + 1
+                    return answer
+                else:
+                    self.trigger_counter = 0
+                    self.triggering = None
+                    if not answer:
+                        return answer
         return True
 
     def dc_play(self, input, username='username', analyse=True):
@@ -526,6 +541,7 @@ class GAME:
                 return answer
             else:
                 return self.secret_finder(self.scene.location.describe(npcs=self.scene.npcs))
+                # This line leads to ignoring user input when it shouldn't be ignored.
         # This is running scene:
         self.a = input
         self.sort = classify(self.a, self.adventure, analyse)
@@ -617,9 +633,8 @@ class GAME:
         for i in self.scene.secrets:
             if self.object_of_interest in i.where_to_find:
                 if not i.found:
-                    if random.random() > 0:
-                        secrets.append(i)
-                        print(f'(Devtool) secret: {i.name}')
+                    secrets.append(i)
+                    print(f'(Devtool) secret: {i.name}')
         for i in secrets:
             prompt = f'Secret: {i.name}\nText: {response}\n\nAnswer:'
             mentioned = openai.Completion.create(model='davinci:ft-personal:secret-finder-2023-02-02-05-34-08',
@@ -719,7 +734,7 @@ def who(a, scene):
     response = response['choices'][0]['text']
     with open('data.json', 'r') as f:
         data = json.load(f)
-    data['who'].update({prompt: response + '###'})
+    data['newwho'].update({prompt: response + '###'})
     with open('data.json', 'w') as f:
         json.dump(data, f, indent=4)
     if response.startswith(' '):
@@ -759,7 +774,7 @@ def where(a, adventure):
     response = response['choices'][0]['text']
     with open('data.json', 'r') as f:
         data = json.load(f)
-    data['where'].update({prompt: response + '###'})
+    data['newwhere'].update({prompt: response + '###'})
     with open('data.json', 'w') as f:
         json.dump(data, f, indent=4)
     if response.startswith(' '):
@@ -769,7 +784,7 @@ def where(a, adventure):
     else:
         print('Where are you going?')
         print(names)
-        # response = input('(!) Please copypaste where you are going or leave empty to just go somewhere.')
+        # response = input('(!) Please copypaste where you are going or leave empty to just go somewhere. ')
         response = ''
         if response in names:
             return name_dict[response]
