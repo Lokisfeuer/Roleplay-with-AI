@@ -45,21 +45,21 @@ def on_the_algebra(self, x, counter, message=None):
                 pass
             else:
                 x.scene.npcs.remove(i)
-        if x.scene.location.name == 'inner deck of the Algebra':
+        if x.scene.location.name == 'Under deck Algebra':
             if get_by_name('Matthews freed', x).found:
-                x.conditions = [get_by_name('Algebra', x), [get_by_name('Captain', x)]]
+                x.conditions = [get_by_name('Top deck Algebra', x), [get_by_name('Captain', x)]]
             else:
                 if x.sort is not None:
                     string = 'Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.\n' \
                              'Do you want to free Matthews? [Y/n]'
                     return string
-    elif x.scene.location.name == 'inner deck of the Algebra' and counter == 1 and not get_by_name('Matthews freed', x).found:
+    elif x.scene.location.name == 'Under deck Algebra' and counter == 1 and not get_by_name('Matthews freed', x).found:
         answer = x.a.lower()
         if answer[0] == 'y':
             string = 'You free Matthews.'
             get_by_name('Matthews freed', x).found = True
             x.scene.npcs.append(get_by_name('Matthews Joachim Karl von Philsa', x))
-            x.conditions = [get_by_name('Algebra', x), [get_by_name('Captain', x)]]
+            x.conditions = [get_by_name('Top deck Algebra', x), [get_by_name('Captain', x)]]
         else:
             string = 'You do not free Matthews.'
         return string
@@ -226,11 +226,11 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
     pier = LOCATION(name='pier', description='There is only a single vessel in the pier. It is the Algebra, '
                                              'a big sailing vessel with three masts. If they are here Tom and Jerry'
                                              'are guarding the Algebra.')
-    ship = LOCATION(name='Algebra',
+    ship = LOCATION(name='Top deck Algebra',
                     description='The Algebra is a big sailing vessel. It\'s got three masts. On the main deck is a'
                                 'huge steering wheel and a hatch to go below deck.',
                     conditions=[{sec_h: True}])
-    inside_ship = LOCATION(name='inner deck of the Algebra', description='Inside the Algebra are multiple smaller '
+    inside_ship = LOCATION(name='Under deck Algebra', description='Inside the Algebra are multiple smaller '
                                                                          'rooms, including a galley, a mess hall, '
                                                                          'a medical bay, a weapons storage room and '
                                                                          'the crew quarters as well as one cell with '

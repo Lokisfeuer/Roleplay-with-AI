@@ -42,12 +42,6 @@
 
 
 
-# THE NEW IMPORTANT THINGY:
-
-# Ship cannot be entered even after guards are relived.
-
-
-
 import jsonpickle
 import openai
 import random
@@ -681,8 +675,15 @@ class GAME:
 
     def room_change(self):
         loc = where(self.a, self.adventure)
-        # NPC conditions should explicitly exclude the ones from the last scene.
-        self.conditions = [loc, [None]]
+        if self.a.startswith('Okay,'):
+            npcs = []
+            for i in self.adventure.major_npcs:
+                if i.active:
+                    npcs.append(i)
+            self.conditions = [loc, npcs]
+        else:
+            # NPC conditions should explicitly exclude the ones from the last scene.
+            self.conditions = [loc, [None]]
         self.running_scene = False
         return f'You are going to the {loc.name}.'
 
