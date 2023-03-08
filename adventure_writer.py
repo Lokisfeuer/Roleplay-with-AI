@@ -87,33 +87,94 @@ def talk_and_write(message, author):
 
 
 def check_for_completeness(author, name_of_adventure):
+    def list_in_list(list1, list2):
+        for i in list1:
+            if not i in list2:
+                return False
+        return True
+
     with open('adventures.json', 'r') as f:
         data = json.load(f)
     missing = []
     adventure = data[author][name_of_adventure]
-    for k in ['npcs', 'locations', 'secrets']:
-        for i in adventure[k].keys():
-            for j in adventure[k][i].keys():
-                if adventure[k][i][j] == '':
-                    missing.append(f'Object of type "{k}" and name "{i}" is missing "{j}".')
-    if missing == []:
-        return True
-    else:
+    all_objects = {}
+    all_objects.update(adventure['npcs']).update(adventure['locations']).update(adventure['secrets'])
+    for i in all_objects.keys():
+        for j in all_objects[i].keys():
+            if all_objects[i][j] == '':
+                missing.append(f'Object with name "{i}" is missing parameter "{j}".')
+    if not missing == []:
         return missing
+    validated = []
+    for x in all_objects.keys():
+        for i in all_objects.keys():
+            if i not in validated and list_in_list(all_objects[i]['conditions'], validated):
+                if 'where_to_find' in all_objects[i].keys():
+                    if list_in_list(all_objects[i]['where_to_find'], validated):
+                        validated.append(i)
+                        break
+                else:
+                    validated.append(i)
+                    break
+    # now validated should be the perfectly ordered list of object-strings
+    if not list_in_list(all_objects.keys(), validated):
+        answer = ''
+        for i in all_objects.keys():
+            if i not in validated:
+                answer = f'{answer}The object with name "{i}" has unvalidated conditions or where to find.\n'
+        return f'There is a logical loop in your adventure. Not everything can be fully defined.\n\n{answer}'
+    write_adventure_from_data(author, name_of_adventure, all_objects)
 
 
-def write_adventure_from_data(author, name_of_adventure):
+def write_adventure_from_data(author, name_of_adventure, all_objects, adventure):
+    obj_commands = ''
+    all_list_commands = ''
+    for i in ['npcs', 'locations', 'secrets']:
+        list_command = ''
+        for j in adventure[i].keys():
+            parameters = ''
+            for k in adventure[i][j].keys():
+                parameters = f'{parameters}, {k}: {adventure[i][j][k]}'
+            parameters = parameters[2:]
+            obj_commands = f'{obj_commands}\t{j} = adv_str.{i[:-1].upper()}({parameters})\n'
+
+            list_command = f'{list_command}, {j}'
+        list_command = f'{i} = [{list_command[2:]}]'
+        all_list_commands = f'{all_list_commands}\t{list_command}\n'
+    nam_command = f'\tname = {name_of_adventure}'
+    # starting conditions
+    adv_command = \
+    '''
+    adventure = ADVENTURE(name=name, major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger_dict={})
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    data['adventures'].update({name: {'adventure': jsonpickle.encode(adventure, keys=True),
+                                      'conditions': jsonpickle.encode(starting_conditions, keys=True)}})
+    with open('data.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    return adventure, starting_conditions
+    '''
+    full_function_content = f'{obj_commands}\n{all_list_commands}\n\n\t{nam_command}\n{adv_command}'
+    imp_commands = 'import adventure_structure as adv_str\nimport json'
+    full_document = f'{imp_commands}\n\n\ndef {name_of_adventure}():\n{full_function_content}'
+    with open(f'{author}_{name_of_adventure}.py', 'w') as f:
+        f.write(full_document)
+
+
+def setup(author, name_of_adventure):
+    background = {'object_of_interest': 'npcs', 'name_of_adventure': name_of_adventure, 'object_type': ''}
+    content = {'background': background, name_of_adventure: {}}
+    adventure_content = ['name', 'npcs', 'locations', 'secrets', 'triggers']
+    for i in adventure_content:
+        content[name_of_adventure].update({i: {}})
+    content[name_of_adventure]['name'] = name_of_adventure
     with open('adventures.json', 'r') as f:
         data = json.load(f)
-    adventure = data[author][name_of_adventure]
-    running = True
-    while running:
-        for i in adventure.keys():
-            pass
-            # write quite a bit.
-
-
-
+    if author not in data.keys():
+        data.update({"author": {}})
+    data[author].update(content)
+    with open('adventures.json', 'w') as f:
+        json.dump(data, f, indent=4)
 
 
 
