@@ -299,8 +299,10 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
                           actionrelevance=0, trigger_dict=trigger_dict)
     with open('data.json', 'r') as f:
         data = json.load(f)
-    data['adventures'].update({name: {'adventure': jsonpickle.encode(adventure, keys=True),
-                                      'conditions': jsonpickle.encode(starting_conditions, keys=True)}})
+    data['adventures'].update({name: {
+        'adventure': jsonpickle.encode(adventure, keys=True),
+        'conditions': jsonpickle.encode(starting_conditions, keys=True)
+    }})
     with open('data.json', 'w') as f:
         json.dump(data, f, indent=4)
     return adventure, starting_conditions

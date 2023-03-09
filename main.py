@@ -4,43 +4,13 @@
 # Every Scene Type intelligent interpreter
 
 # next steps:
-# just one input and one output point
-# set up DC bot.
-# test commands
+# clean up code
+# write commands (/exit)
 # command take back
 # A website
-# easier and with AI written adventures. (Text to code?)
-
-# Analysis:
-# changes places too easily.
-# classifier should take into consideration which places exist. ?! - not the model but the function maybe
-# assumes speech too often. classifier should take into consideration the prior messages and therefore the context.
-# sometimes the AI already writes the next input of the person, especially during speech.
-#   finetuning would help. improving prompt to write precisley one message would be easier.
-# Starting conversations via speech leads to confusion.
-# Secrets shouldn't be given to the player multiple times in the log.
-
-# Therefore:
-# retune the classifier using "" for speech.
-# finetune all Answer creating models.
-
-# result:
-# still assumes speech to often and without "".
-
-
-# ideas for improvement:
-
-# for the speeches that could be info questions add them without "" and as info to the sample.
-# always keep the player in the game, never let them guess what to write now. (like game saved or so on.)
-
-# add a /adventure/room/object_of_interest to every message.
-# make important piece of info just one time findable
-# update the answer creating model prompts to not already write the next users input. - done, - test it.
-# DON'T START RANDOM CONVERSATIONS VIA SPEECH. (Instead do what???)
-# ? maybe change classifier function to check for places that exists and consider it action otherwise. DON'T MOVE RANDOM
-
-
-
+# add character skills and classes
+# add fighting
+# create a proper menu
 
 import jsonpickle
 import openai
@@ -51,6 +21,7 @@ import json
 import jsonlines
 import discord
 import datetime
+import adventure_writer
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 TOKEN = os.getenv('DISCORD_TOKEN_ROLEPLAY')
@@ -106,6 +77,13 @@ async def on_message(message):
         if username in data['players'].keys() and sec < 1800:
             if not data['players'][username]['fetching game'] and data['players'][username]['recent adventure'] is not None:
                 adventure = data['players'][message.author.name]['recent adventure']
+                if adventure == 'writing adventure':
+                    answer = adventure_writer.main(username, message.content)
+                    await message.channel.send(answer)
+                    if isinstance(answer, bool):
+                        data['players'][username]['fetching game'] = True
+                        await message.channel.send('Which adventure do you want to play?')
+                    return
                 pickled_object = data['players'][message.author.name][adventure][-1]
                 game = jsonpickle.decode(pickled_object, keys=True)
                 if game.triggering is None:
@@ -170,11 +148,12 @@ async def dc_login(message):
             if adventure in adventures or adventure[0].isdigit():
                 if adventure[0].isdigit():
                     adventure = adventures[int(adventure[0]) - 1]
-                conditions = jsonpickle.decode(data['adventures'][adventure]['conditions'], keys=True)
-                adv = jsonpickle.decode(data['adventures'][adventure]['adventure'], keys=True)
-                game = GAME(adventure=adv, conditions=conditions)
-                if adventure not in data['players'][username].keys():
-                    data['players'][username].update({adventure: [jsonpickle.encode(game, keys=True)]})
+                if not adventure == 'writing adventure':
+                    conditions = jsonpickle.decode(data['adventures'][adventure]['conditions'], keys=True)
+                    adv = jsonpickle.decode(data['adventures'][adventure]['adventure'], keys=True)
+                    game = GAME(adventure=adv, conditions=conditions)
+                    if adventure not in data['players'][username].keys():
+                        data['players'][username].update({adventure: [jsonpickle.encode(game, keys=True)]})
                 data['players'][username].update({'recent adventure': adventure})
                 answer = f'You are logged in as {username} and are playing the adventure {adventure}.\n' \
                          f'Send anything to continue.'

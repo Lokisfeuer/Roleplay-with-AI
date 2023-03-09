@@ -1,50 +1,82 @@
-import adventure_structure
-import openai
-import os
 import json
+
+# check names
+# Description (and names) should be multiple words long.
+# command to show all objects
+# if Error not in keywords, check whether its an object to navigate
 
 
 def talk_and_write(message, author):
-    with open('adventures.json', 'r') as f:
+    with open('user_written_adventures/adventures.json', 'r') as f:
         data = json.load(f)
+    if author not in data.keys():
+        return 'To setup a new adventure, enter "/new name_of_adventure".'
     object_of_interest = data[author]['background']['object_of_interest']
     name_of_adventure = data[author]['background']['name_of_adventure']
+    adventure = data[author][name_of_adventure]
     object_type = data[author]['background']['object_type']
-    keyword_dict = {'npcs': {}, 'locations': {}, 'secrets': {}}  # need to be hardcoded
+    keyword_dict = {'npcs': {'name': '', 'hostile': 'False', 'conditions': [], 'description': ''},
+                    'locations': {'name': '', 'conditions': [], 'description': ''},
+                    'secrets': {'name': '', 'where_to_find': [], 'relevance': '1', 'positive': 'True',
+                                'found': 'False', 'conditions': [], 'description': '', 'clue': 'True'}}
     if object_of_interest in keyword_dict.keys():
         if message == '/done':
-            index = keyword_dict.keys().index(object_of_interest)
+            index = list(keyword_dict.keys()).index(object_of_interest)
             if index == 2:
-                object_of_interest = data[author][name_of_adventure]['npcs'].keys()[0]
-                data[author]['background']['object_type'] = 'npcs'
-                answer = f'You are now at npc "{object_of_interest}".'
+                object_of_interest = 'starting_conditions'
+                answer = f'Please enter now the starting conditions.'
             else:
-                object_of_interest = keyword_dict.keys()[index+1]
+                object_of_interest = list(keyword_dict.keys())[index + 1]
                 answer = f'Please enter now all your {object_of_interest}.'
             data[author]['background']['object_of_interest'] = object_of_interest
-            with open('adventures.json', 'w') as f:
+            with open('user_written_adventures/adventures.json', 'w') as f:
                 json.dump(data, f, indent=4)
             return answer
         if message not in data[author][name_of_adventure][object_of_interest].keys():
-            data[author][name_of_adventure][object_of_interest].update({message: keyword_dict[object_of_interest]})
-            with open('adventures.json', 'w') as f:
+            data[author][name_of_adventure][object_of_interest].update({message.lower(): keyword_dict[object_of_interest]})
+            with open('user_written_adventures/adventures.json', 'w') as f:
                 json.dump(data, f, indent=4)
             return f'Received {object_of_interest[:-1]} "{message}"'
         else:
             return f'This {object_of_interest[:-1]} already exists.'
     else:
-        if message.slice(' ')[0][1:] in keyword_dict[object_type].keys() or not message.startswith('/'):
+        if object_of_interest == 'starting_conditions':
+            if message in list(adventure['npcs'].keys()) + list(adventure['locations'].keys()):
+                if message in adventure['locations'].keys():
+                    data[author][name_of_adventure]['starting_conditions'][0] = message
+                    answer = f'Set location "{message}" to starting conditions.'
+                else:
+                    data[author][name_of_adventure]['starting_conditions'][1].append(message)
+                    answer = f'Added npc "{message}" to starting conditions.'
+            elif message == '/done':
+                if data[author][name_of_adventure]['starting_conditions'][1] == []:
+                    data[author][name_of_adventure]['starting_conditions'][1].append(None)
+                object_of_interest = list(data[author][name_of_adventure]['npcs'].keys())[0]
+                data[author]['background']['object_of_interest'] = object_of_interest
+                data[author]['background']['object_type'] = 'npcs'
+                answer = f'Starting conditions set as location: ' \
+                         f'"{adventure["starting_conditions"][0]}" and npcs: "{adventure["starting_conditions"][1]}"'
+                answer = f'{answer}\nYou are now at npc "{object_of_interest}". You can set attributes with keywords.'
+            else:
+                answer = 'This is not a valid condition. Type /done to end.'
+            with open('user_written_adventures/adventures.json', 'w') as f:
+                json.dump(data, f, indent=4)
+            return answer
+        if message.split()[0][1:] in keyword_dict[object_type].keys() or not message.startswith('/'):
             full_object = data[author][name_of_adventure][object_type][object_of_interest]
-            keyword = message.slice(' ')[0]
+            keyword = message.split()[0]
             if keyword.startswith('/'):
                 keyword = keyword[1:]
             elif keyword.endswith(':'):
                 keyword = keyword[:-1]
             if keyword not in full_object.keys():
                 return 'Error keyword not in keywords.'
-            value = message.slice(' ')[-1]
-            data[author][name_of_adventure][object_type][object_of_interest][keyword] = value
-            with open('adventures.json', 'w') as f:
+            value = message.split()[-1]
+            if keyword == 'conditions' or keyword == 'where_to_find':
+                data[author][name_of_adventure][object_type][object_of_interest][keyword].append(value)
+            else:
+                data[author][name_of_adventure][object_type][object_of_interest][keyword] = value
+            with open('user_written_adventures/adventures.json', 'w') as f:
                 json.dump(data, f, indent=4)
         else:
             found = False
@@ -55,9 +87,9 @@ def talk_and_write(message, author):
                         object_of_interest = j
                         object_type = i
                         full_object = data[author][name_of_adventure][object_type][object_of_interest]
-                        data[author][name_of_adventure]['background']['object_of_interest'] = object_of_interest
-                        data[author][name_of_adventure]['background']['object_type'] = object_type
-                        with open('adventures.json', 'w') as f:
+                        data[author]['background']['object_of_interest'] = object_of_interest
+                        data[author]['background']['object_type'] = object_type
+                        with open('user_written_adventures/adventures.json', 'w') as f:
                             json.dump(data, f, indent=4)
                         break
                 if found:
@@ -65,9 +97,9 @@ def talk_and_write(message, author):
             if not found:
                 if message == '/done':
                     missing = check_for_completeness(author, name_of_adventure)
-                    if isinstance(bool):
-                        write_adventure_from_data(author, name_of_adventure)
-                        return 'adventure written successfully.'  # send full document?
+                    if isinstance(missing, bool):
+                        write_adventure_from_data(author, name_of_adventure, adventure)
+                        return True  # send full document?
                     else:
                         answer = f'/adventure writer/{name_of_adventure}/{object_type}/{object_of_interest}\n\n'
                         for i in missing:
@@ -75,8 +107,9 @@ def talk_and_write(message, author):
                         answer = f'{answer}\nTherefore adventure could not be written.'
                         return answer
                 elif message == '/exit':
-                    pass  # /exit needs to be handled
+                    return False
                 return 'Error object not found.'
+        print('Reached end of talk_and_write.')
         answer = f'/adventure writer/{name_of_adventure}/{object_type}/{object_of_interest}'
         answer = f'{answer}\n\n'
         for i in full_object.keys():
@@ -88,20 +121,23 @@ def talk_and_write(message, author):
 
 def check_for_completeness(author, name_of_adventure):
     def list_in_list(list1, list2):
-        for i in list1:
-            if not i in list2:
+        for element in list1:
+            if element not in list2:
                 return False
         return True
 
-    with open('adventures.json', 'r') as f:
+    with open('user_written_adventures/adventures.json', 'r') as f:
         data = json.load(f)
     missing = []
     adventure = data[author][name_of_adventure]
+    mandatory = ['name', 'description']
     all_objects = {}
-    all_objects.update(adventure['npcs']).update(adventure['locations']).update(adventure['secrets'])
+    all_objects.update(adventure['npcs'])
+    all_objects.update(adventure['locations'])
+    all_objects.update(adventure['secrets'])
     for i in all_objects.keys():
         for j in all_objects[i].keys():
-            if all_objects[i][j] == '':
+            if j in mandatory and all_objects[i][j] == '':
                 missing.append(f'Object with name "{i}" is missing parameter "{j}".')
     if not missing == []:
         return missing
@@ -118,15 +154,15 @@ def check_for_completeness(author, name_of_adventure):
                     break
     # now validated should be the perfectly ordered list of object-strings
     if not list_in_list(all_objects.keys(), validated):
-        answer = ''
+        answer = ['There is a logical loop in your adventure. Not everything can be fully defined.\n']
         for i in all_objects.keys():
             if i not in validated:
-                answer = f'{answer}The object with name "{i}" has unvalidated conditions or where to find.\n'
-        return f'There is a logical loop in your adventure. Not everything can be fully defined.\n\n{answer}'
-    write_adventure_from_data(author, name_of_adventure, all_objects)
+                answer.append(f'The object with name "{i}" has unvalidated conditions or where to find.')
+        return answer
+    return True
 
 
-def write_adventure_from_data(author, name_of_adventure, all_objects, adventure):
+def write_adventure_from_data(author, name_of_adventure, adventure):
     obj_commands = ''
     all_list_commands = ''
     for i in ['npcs', 'locations', 'secrets']:
@@ -134,250 +170,66 @@ def write_adventure_from_data(author, name_of_adventure, all_objects, adventure)
         for j in adventure[i].keys():
             parameters = ''
             for k in adventure[i][j].keys():
-                parameters = f'{parameters}, {k}: {adventure[i][j][k]}'
+                if k == 'name' or k == 'description':
+                    parameters = f'{parameters}, {k}=\'{adventure[i][j][k]}\''
+                else:
+                    parameters = f'{parameters}, {k}={adventure[i][j][k]}'
             parameters = parameters[2:]
             obj_commands = f'{obj_commands}\t{j} = adv_str.{i[:-1].upper()}({parameters})\n'
 
             list_command = f'{list_command}, {j}'
         list_command = f'{i} = [{list_command[2:]}]'
         all_list_commands = f'{all_list_commands}\t{list_command}\n'
-    nam_command = f'\tname = {name_of_adventure}'
-    # starting conditions
+    nam_command = f'\tname = \'{name_of_adventure}\''
+    sta_con_command = f'\tstarting_conditions = {adventure["starting_conditions"]}'
     adv_command = \
-    '''
-    adventure = ADVENTURE(name=name, major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger_dict={})
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-    data['adventures'].update({name: {'adventure': jsonpickle.encode(adventure, keys=True),
-                                      'conditions': jsonpickle.encode(starting_conditions, keys=True)}})
-    with open('data.json', 'w') as f:
-        json.dump(data, f, indent=4)
-    return adventure, starting_conditions
-    '''
-    full_function_content = f'{obj_commands}\n{all_list_commands}\n\n\t{nam_command}\n{adv_command}'
-    imp_commands = 'import adventure_structure as adv_str\nimport json'
-    full_document = f'{imp_commands}\n\n\ndef {name_of_adventure}():\n{full_function_content}'
-    with open(f'{author}_{name_of_adventure}.py', 'w') as f:
-        f.write(full_document)
+        '''
+\tadventure = adv_str.ADVENTURE(name=name, major_npcs=npcs, major_locations=locations, major_secrets=secrets, trigger_dict={})
+\twith open('data.json', 'r') as f:
+\t\tdata = json.load(f)
+\tdata['adventures'].update({name: {
+\t\t'adventure': jsonpickle.encode(adventure, keys=True),
+\t\t'conditions': jsonpickle.encode(starting_conditions, keys=True)
+\t}})
+\twith open('data.json', 'w') as f:
+\t\tjson.dump(data, f, indent=4)
+\treturn adventure, starting_conditions
+'''
+    full_function_content = f'{obj_commands}\n{all_list_commands}\n{nam_command}\n{sta_con_command}\n{adv_command}'
+    imp_commands = 'import adventure_structure as adv_str\nimport json\nimport jsonpickle'
+    full_doc = f'{imp_commands}\n\n\ndef {name_of_adventure.lower().replace(" ","_")}():\n{full_function_content}\n'
+    with open(f'user_written_adventures/{author}_{name_of_adventure}.py', 'w') as f:
+        f.write(full_doc)
 
 
 def setup(author, name_of_adventure):
     background = {'object_of_interest': 'npcs', 'name_of_adventure': name_of_adventure, 'object_type': ''}
     content = {'background': background, name_of_adventure: {}}
-    adventure_content = ['name', 'npcs', 'locations', 'secrets', 'triggers']
+    adventure_content = ['name', 'starting_conditions', 'npcs', 'locations', 'secrets']
     for i in adventure_content:
         content[name_of_adventure].update({i: {}})
     content[name_of_adventure]['name'] = name_of_adventure
-    with open('adventures.json', 'r') as f:
+    content[name_of_adventure]['starting_conditions'] = [None, []]
+    with open('user_written_adventures/adventures.json', 'r') as f:
         data = json.load(f)
     if author not in data.keys():
-        data.update({"author": {}})
-    data[author].update(content)
-    with open('adventures.json', 'w') as f:
-        json.dump(data, f, indent=4)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-docstring = ''
-lines = docstring.split('\n')
-for line in lines:
-    if line.startswith(' — ge') or line.startswith(
-            'Digi') or line == '':
-        pass
-    elif line.startswith('BOT'):
-        print('BOT:')
-    elif line.startswith('Lokisg'):
-        print('ME:')
+        data.update({author: {}})
+    if name_of_adventure in data[author].keys():
+        data[author].update({'background': background})
+        answer = 'Reopened adventure. You can now add objects to the adventure.'
     else:
-        print(line)
-
-
-def dc_write_adventure(answer, previous=None):
-    if previous is None:
-        answer = 'An adventure consists of three things: LOCATIONS, NPCS, and SECRETS.\n' \
-                 'Please start with the NPCs first. Just enter the name of a NPC and then enter all information you ' \
-                 'are asked about. When you are done you have the option to continue with another NPC or start with ' \
-                 'the locations.'
-        return answer
-
-
-
-
-def write_adventure():
-    object_dict = {'npcs': {}, 'locations': {}, 'secrets': {}, 'trigger': {}}
-    print(f'Please enter all your npcs, locations, secrets and trigger. When you are done with one just type "/next"')
-    for i in object_dict.keys():
-        a = input(f'({i}) <please enter:> ')
-        while not a.startswith('/'):
-            object_dict[i].update({a: []})
-            a = input('<please enter:> ')
-        print('now please enter all locations or if you already did that all secrets')
-        for i in object_dict['secrets'].keys():
-            print(f'Where can the secret "{i}"be found? Enter all locations and npcs. When you are done just type '
-                  f'"/next"')
-            a = input(f'({i}) <please enter:> ')
-            while not a.startswith('/'):
-                # ask for closest match in object_dict
-                object_dict['secrets'][i].append(a)
-                a = input('<please enter:> ')
-
-
-
-
-
-
-
-
-def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol,
-                        secret_message):
-    # Triggers are checked at the beginning of each scene and after every action.
-
-    sec_false = SECRET(name='false', where_to_find=[])
-
-    john = NPC(name='John', description='John is a sailor on the Algebra.')
-    jack = NPC(name='Jack', description='Jack is an elderly fisherman. He is very scared of the sea.')
-    isabella = NPC(name='Isabella', description='Isabella is a thief. She lives in the abandoned lighthouse '
-                                                'nearby. Usually she just steals food but if she gets the chance she '
-                                                'might also take some things of value.')
-    michael = NPC(name='Michael', description='He works for his mother in the local tavern "The drowned aboleth" '
-                                              'where he is rather unhappy. ')
-    andrea = NPC(name='Andrea', description='Andrea is Michael\'s mother. She is the innkeeper and owner of the local '
-                                            'tavern "The drowned aboleth".')
-    greg = NPC(name='Greg', description='Greg is a sailor on the Algebra.')
-    captain = NPC(name='Captain',
-                  description='The captain wears a big captain\'s hat. In one hand he holds a saber and '
-                              'in the other one he carries a shotgun.',
-                  hostile=True, conditions=[{sec_false: True}])  # never active
-    piet = NPC(name='Piet', description='Piet is an elderly sailor on the Algebra.')
-    timmy = NPC(name='Timmy', description='Timmy is the kitchen boy on the Algebra. He has a friendly character.'
-                                          'willing to do anyone a favor. He is a little scared of the captain.')
-    matthews = NPC(name='Matthews Joachim Karl von Philsa',
-                   description='Matthews Joachim Karl von Philsa is the oldest son of the Duke of Philsa. He is a '
-                               'little arrogant and self-pitiful.',
-                   conditions=[{sec_false: True}])
-    robber = NPC(name='Robber', description='The robber is an intimidating figure with a knife in one hand.',
-                 conditions=[{sec_false: True}])
-    sec_h = SECRET(name='Guards relieved.', where_to_find=[])
-    steve = NPC(name='Steve',
-                description='Steve is guarding the Algebra. He takes care and allows nobody to pass through.',
-                conditions=[{sec_h: True}])
-    tom = NPC(name='Tom',
-              description='Tom is protecting the Algebra. He takes care and allows nobody to pass through.',
-              conditions=[{sec_h: True}])
-
-    streets = LOCATION(name='streets', description='These are the dark streets of the village. The local tavern "The '
-                                                   'drowned aboleth" can be found here.')
-    tavern = LOCATION(name='tavern',
-                      description='This is the local tavern "The drowned aboleth" which is the social centre of the '
-                                  'village. The tavern is well filled, beer and alcoholic beverages flow in streams '
-                                  'and there is generally good mood. On one of the walls a map of the local area with '
-                                  'a nearby lighthouse can be seen.')
-    sec_lighthouse = SECRET(name='There is an abandoned lighthouse nearby.',
-                            where_to_find=[tavern, jack, isabella, michael, andrea])
-    lighthouse = LOCATION(name='lighthouse',
-                          description='The old lighthouse was abandoned years ago. There hasn\'t been a lighthouse'
-                                      'keeper for ages.',
-                          conditions=[{sec_lighthouse: True}])
-    sec_bay = SECRET(name='There is a bay where the crew of the Algebra stores their goods.',
-                     where_to_find=[john, jack, isabella, greg, piet, timmy, steve, tom, lighthouse])
-    # check sec_bay [lighthouse] during testing.
-    bay = LOCATION(name='bay', description='At this bay the crew of the Algebra is storing their smuggled goods. The '
-                                           'bay is full with more or less valuable treasury.',
-                   conditions=[{sec_bay: True}])
-    pier = LOCATION(name='pier', description='There is only a single vessel in the pier. It is the Algebra, '
-                                             'a big sailing vessel with three masts. If they are here Tom and Jerry'
-                                             'are guarding the Algebra.')
-    ship = LOCATION(name='Top deck Algebra',
-                    description='The Algebra is a big sailing vessel. It\'s got three masts. On the main deck is a'
-                                'huge steering wheel and a hatch to go below deck.',
-                    conditions=[{sec_h: True}])
-    inside_ship = LOCATION(name='Under deck Algebra', description='Inside the Algebra are multiple smaller '
-                                                                         'rooms, including a galley, a mess hall, '
-                                                                         'a medical bay, a weapons storage room and '
-                                                                         'the crew quarters as well as one cell with '
-                                                                         'a prisoner.', conditions=[{sec_h: True}])
-
-    # Story-secrets:
-    sec_a = SECRET(name='There is a message given to the players saying that Matthews is being held on the Algebra.',
-                   where_to_find=[timmy, tavern])
-    sec_b = SECRET(name="John is in love with Isabella and wants the players to bring her a loveletter from him.",
-                   where_to_find=[john])
-    sec_c = SECRET(name="Jack owns a little boat with which you can approach the Algebra from the unguarded seaside.",
-                   where_to_find=[jack, andrea])  # let's ignore this for the first tests.
-    sec_d = SECRET(name="Micheal plans to sign on the Algebra.",
-                   where_to_find=[michael, michael])
-    sec_e = SECRET(name="Isabella lives in the abandoned lighthouse.",
-                   where_to_find=[isabella, lighthouse, michael])
-    sec_f = SECRET(name="Greg has a gambling problem and desperately needs money.",
-                   where_to_find=[greg, andrea])
-    sec_g = SECRET(name='Any two members of the crew of the Algebra can relieve the guards of the Algebra.',
-                   where_to_find=[john, greg, piet, timmy, steve, tom])
-    sec_k = SECRET(name='Piet enjoys alcohol a little to much but he doesn\'t get to have any on the Algebra.',
-                   where_to_find=[piet, andrea])
-    # Non-story-secrets:
-    sailors_help = {}
-    sailors_help.update({john: SECRET(name=f'{john.name} is willing to help the player.', where_to_find=[])})
-    sailors_help.update({greg: SECRET(name=f'{greg.name} is willing to help the player.', where_to_find=[])})
-    sailors_help.update({timmy: SECRET(name=f'{timmy.name} is willing to help the player.', where_to_find=[timmy])})
-    sailors_help.update(
-        {michael: SECRET(name=f'{michael.name} is willing to help the player.', where_to_find=[michael])})
-    sailors_help.update({piet: SECRET(name=f'{piet.name} is willing to help the player.', where_to_find=[])})
-    # other_secrets:
-    # sec_h = SECRET(name='Guards relieved.', where_to_find=[])
-    sec_i = SECRET(name='Matthews freed', where_to_find=[])
-    sec_j = SECRET(name='Michael started on the Algebra.', where_to_find=[])
-    # sec_false = SECRET(name='false', where_to_find=[])
-    sec_won = SECRET(name='Won', where_to_find=[])
-    # relevance=1, positive=True, found=False, conditions=None, description={}
-
-    triggerfunctions = [prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol, secret_message]
-
-    trig_a = TRIGGER(when_triggered=[inside_ship, ship], function=on_the_algebra)
-    trig_b = TRIGGER(when_triggered=[captain], function=boss_fight)
-    trig_c = TRIGGER(when_triggered=[pier], function=at_the_algebra)
-    trig_d = TRIGGER(when_triggered=[sec_won], function=won)
-
-    loveletter = TRIGGER(when_triggered=[isabella], function=loveletter)
-    money = TRIGGER(when_triggered=[greg], function=money)
-    alcohol = TRIGGER(when_triggered=[piet], function=alcohol)
-    secret_message = TRIGGER(when_triggered=[tavern], function=secret_message)
-    prolouge = TRIGGER(when_triggered=[streets], function=prolouge)
-
-    npcs = [john, jack, isabella, michael, andrea, greg, captain, piet, timmy, matthews, robber, steve, tom]
-    locations = [streets, tavern, lighthouse, bay, ship, inside_ship, pier]
-    secrets = [sec_a, sec_b, sec_c, sec_d, sec_e, sec_f, sec_g, sec_h, sec_i, sec_j, sec_k, sec_won, sec_false,
-               sec_lighthouse, sec_bay]
-    secrets.extend(sailors_help.values())
-    trigger = [prolouge, trig_a, trig_b, trig_c, trig_d, loveletter, money, alcohol, secret_message]
-    starting_conditions = [streets, [robber]]
-
-    trigger_dict = {}
-    for trigger, function in zip(trigger, triggerfunctions):
-        trigger_dict.update({trigger: function})
-
-    name = 'the drowned aboleth'
-    adventure = ADVENTURE(name=name, major_npcs=npcs, major_locations=locations, major_secrets=secrets,
-                          actionrelevance=0, trigger_dict=trigger_dict)
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-    data['adventures'].update({name: {'adventure': jsonpickle.encode(adventure, keys=True),
-                                      'conditions': jsonpickle.encode(starting_conditions, keys=True)}})
-    with open('data.json', 'w') as f:
+        data[author].update(content)
+        answer = 'Setup new adventure.'
+    with open('user_written_adventures/adventures.json', 'w') as f:
         json.dump(data, f, indent=4)
-    return adventure, starting_conditions
+    return answer + '\nPlease enter your npcs one by one. When you are done enter "/done".'
+
+
+def main(author, message):
+    if message.startswith('/new'):
+        send = ''
+        for i in message.split()[1:]:
+            send = send + i
+        return setup(author, send)
+    else:
+        return talk_and_write(message, author)

@@ -1,0 +1,231 @@
+{
+    "Try#0001": {
+        "background": {
+            "object_of_interest": "Jsecret1",
+            "name_of_adventure": "Juliett",
+            "object_type": "secrets"
+        },
+        "Fostrot": {
+            "name": "Fostrot",
+            "starting_conditions": [
+                null,
+                [
+                    null
+                ]
+            ],
+            "npcs": {
+                "Falpha": {},
+                "Fbravo": {},
+                "Fcharlie": {}
+            },
+            "locations": {},
+            "secrets": {}
+        },
+        "Golf": {
+            "name": "Golf",
+            "starting_conditions": [
+                "Gaugsburg",
+                [
+                    null,
+                    "Galpha",
+                    "Gbrave"
+                ]
+            ],
+            "npcs": {
+                "Galpha": {},
+                "Gbrave": {}
+            },
+            "locations": {
+                "Gaugsburg": {},
+                "Gberlin": {},
+                "Gcottbus": {}
+            },
+            "secrets": {
+                "Gsecret1": {},
+                "Gsecret2": {}
+            }
+        },
+        "Hotel": {
+            "name": "Hotel",
+            "starting_conditions": [
+                "Hberlin",
+                [
+                    null
+                ]
+            ],
+            "npcs": {
+                "Halpha": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [],
+                    "description": ""
+                },
+                "Hbravo": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [],
+                    "description": ""
+                }
+            },
+            "locations": {
+                "Haugsburg": {
+                    "name": "",
+                    "conditions": [],
+                    "description": ""
+                },
+                "Hberlin": {
+                    "name": "",
+                    "conditions": [],
+                    "description": ""
+                }
+            },
+            "secrets": {
+                "Hsecret1": {
+                    "name": "",
+                    "where_to_find": [],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [],
+                    "description": "",
+                    "clue": "True"
+                },
+                "Hsecret2": {
+                    "name": "",
+                    "where_to_find": [],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [],
+                    "description": "",
+                    "clue": "True"
+                }
+            }
+        },
+        "India": {
+            "name": "India",
+            "starting_conditions": [
+                null,
+                [
+                    null
+                ]
+            ],
+            "npcs": {
+                "Ialpha": {
+                    "name": "Ialpha",
+                    "hostile": "False",
+                    "conditions": [],
+                    "description": ""
+                }
+            },
+            "locations": {
+                "/Iaugsburg": {
+                    "name": "",
+                    "conditions": [],
+                    "description": ""
+                },
+                "Iberlin": {
+                    "name": "",
+                    "conditions": [],
+                    "description": ""
+                }
+            },
+            "secrets": {
+                "Isecret1": {
+                    "name": "",
+                    "where_to_find": [],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [],
+                    "description": "",
+                    "clue": "True"
+                }
+            }
+        },
+        "Juliett": {
+            "name": "Juliett",
+            "starting_conditions": [
+                null,
+                [
+                    null
+                ]
+            ],
+            "npcs": {
+                "Jalpha": {
+                    "name": "Jalpha",
+                    "hostile": "False",
+                    "conditions": [
+                        "Jsecret1"
+                    ],
+                    "description": "Persona"
+                },
+                "Jbeta": {
+                    "name": "Jbeta",
+                    "hostile": "False",
+                    "conditions": [],
+                    "description": "Personb"
+                }
+            },
+            "locations": {
+                "Jaugsburg": {
+                    "name": "Jaugsburg",
+                    "conditions": [],
+                    "description": "town."
+                }
+            },
+            "secrets": {
+                "Jsecret1": {
+                    "name": "Jalpha_found",
+                    "where_to_find": [
+                        "Jbeta"
+                    ],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [],
+                    "description": "Persona_found",
+                    "clue": "True"
+                }
+            }
+        }
+    },
+    "Lokisglut": {
+        "background": {
+            "object_of_interest": "kaugsburg",
+            "name_of_adventure": "Kilo",
+            "object_type": "locations"
+        },
+        "Kilo": {
+            "name": "Kilo",
+            "starting_conditions": [
+                null,
+                [
+                    null
+                ]
+            ],
+            "npcs": {
+                "kalpha": {
+                    "name": "qalpha",
+                    "hostile": "False",
+                    "conditions": [],
+                    "description": "q_as_k"
+                },
+                "kbravo": {
+                    "name": "qbravo",
+                    "hostile": "False",
+                    "conditions": [],
+                    "description": "q_as_k"
+                }
+            },
+            "locations": {
+                "kaugsburg": {
+                    "name": "quaksburg",
+                    "conditions": [],
+                    "description": "q_as_k"
+                }
+            },
+            "secrets": {}
+        }
+    }
+}
