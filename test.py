@@ -398,3 +398,120 @@ def rewrite_classifier_sample():
 # rewrite_sec_sample()
 # write_single_file_to_json('sample.jsonl')
 rewrite_classifier_sample()
+
+
+def check_for_trigger(self):
+    back = []
+    a = self.a.replace('\\', '/')
+    if '/' in a[:3]:
+        a = '/' + ''.join(self.a.split('/')[1:])
+        while a.startswith('/ '):
+            a = '/' + a[2:]
+        # commands: back, log (inventory and secrets), clue, help, /mastertype a, describe scene (analyse)
+        b = False
+        if a.startswith('/b'):
+            print('Taking back your last input does not work yet. Sorry.')
+            pass
+        elif a.startswith('/l'):
+            for i in self.adventure.major_secrets:
+                if i.found and i.active:
+                    print(i.name)
+        elif a.startswith('/c'):
+            for i in self.adventure.major_secrets:
+                l = []
+                if i.active and i.clue and not i.found:
+                    l.append(i)
+                clue = random.choice(l)
+                clue.found = True
+                print(f'Here is your clue: {clue.name}.{clue.description}')
+        elif a.startswith('/h'):
+            print(
+                'Here are all commands and what they do. Just enter them after the <please enter:> instead of '
+                'your normal statement.')
+            print(f'"/b" or "/back"         This command takes back your last input.')
+            print(f'"/h" or "/help"         This command lists and explains all commands.')
+            print(f'"/l" or "/log"          This command lists everything you have already found and collected.')
+            print(f'"/c" or "/clue"         This command gives you a clue on how to proceed.')
+            print(f'"/d" or "/describe"     This command lists all the data of the current scene.')
+
+            print(f'The following commands need a normal statement after the command.')
+            print(f'E. g. "/info What do I see?"')
+            print(f'"/i" or "/info"         This command classifies the following statement as an info question.')
+            print(f'"/a" or "/action"       This command classifies the following statement as an action.')
+            print(f'"/v" or "/verbatim"     This command classifies the following statement as verbatim (speech).')
+            print(f'"/t" or "/talk"         This command classifies the following statement as an attempt to')
+            print(f'                        start a conversation.')
+            print(
+                f'"/f" or "/fight"        This command classifies the following statement as an aggressive action.')
+            print(f'"/r" or "/room change"  This command classifies the following statement as a room change.')
+            print('These 6 commands are not necessary, usually inputs are automatically classified correctly.')
+        elif a.startswith('/d'):
+            print(f'Scene type: {self.scene.type}')
+            print('location: ' + self.scene.location.name)
+            print('amount of npcs: ' + str(len(self.scene.npcs)))
+            for j in self.scene.npcs:
+                print('NPC: ' + j.name)
+            print('amount of secrets: ' + str(len(self.scene.secrets)))
+            for j in self.scene.secrets:
+                print('Secret: ' + j.name)
+        elif a.startswith('/i'):
+            b = True
+            self.a = ''.join(a.split()[1:])
+            self.sort = 'info'
+        elif a.startswith('/a'):
+            b = True
+            self.a = ''.join(a.split()[1:])
+            self.sort = 'action'
+        elif a.startswith('/v'):
+            b = True
+            self.a = ''.join(a.split()[1:])
+            self.sort = 'speech'
+        elif a.startswith('/t'):
+            b = True
+            self.a = ''.join(a.split()[1:])
+            self.sort = 'talk'
+        elif a.startswith('/f'):
+            b = True
+            self.a = ''.join(a.split()[1:])
+            self.sort = 'fight'
+        elif a.startswith('/r'):
+            b = True
+            if a.split()[1].startswith('ch'):
+                self.a = ''.join(a.split()[2:])
+            else:
+                self.a = ''.join(a.split()[1:])
+            self.sort = 'room change'
+        else:
+            print('Command not understood, see \'/help\' for help on commands.')
+        # commands: back, log (inventory and secrets), clue, help, /mastertype a, describe scene (analyse)
+        # '/b, /i, /c, /h, /d, /l, /a, /s, /t, /f, /r'
+        back.append(b)
+    for i in self.adventure.trigger:
+        triggered = False
+        for j in i.when_triggered:
+            if isinstance(j, adventure_structure.SECRET):
+                if j.found:
+                    triggered = True
+            if isinstance(j, adventure_structure.NPC):
+                if j in self.scene.npcs:
+                    triggered = True
+            if isinstance(j, adventure_structure.LOCATION):
+                if self.scene.location.name == j.name:
+                    triggered = True
+        if triggered:
+            self.triggering = i
+            answer = i.call(self.adventure, i, self, self.trigger_counter)
+            while self.triggering == i and not isinstance(answer, bool):
+                self.trigger_counter = self.trigger_counter + 1
+                self.a = input(answer)
+                answer = i.call(self.adventure, i, self, self.trigger_counter)
+            self.triggering = None
+            self.trigger_counter = 0
+            back.append(answer)
+    if False in back:
+        return False
+    elif True in back:
+        return True
+    else:
+        pass
+        # One trigger at a time!

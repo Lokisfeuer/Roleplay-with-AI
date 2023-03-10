@@ -89,10 +89,10 @@ def at_the_algebra(self, x, counter, message=None):
                 sailors_help.update(
                     {get_by_name(i, x): get_by_name(f'{get_by_name(i, x).name} is willing to help the player.', x)})
             for i in sailors_help.keys():
-                if get_by_name('Michael started on the Algebra.', x).found or not i == get_by_name('Micheal', x):
+                if get_by_name('Michael started on the Algebra.', x).found or i != get_by_name('Michael', x):
                     if sailors_help[i].found:
                         if sailors_helping == 1:
-                            names = f' and {i.name}'
+                            names = f'{names} and {i.name}'
                         else:
                             names = f', {i.name}{names}'
                         sailors_helping = sailors_helping + 1
@@ -121,7 +121,7 @@ def loveletter(self, x, counter, message=None):
         else:
             if x.a.lower().startswith('y'):
                 get_by_name(f'John is willing to help the player.', x).found = True
-                x.adventure.trigger.remove(self)
+            x.adventure.trigger.remove(self)
     return True
 
 
