@@ -7,13 +7,15 @@ import math
 import openai
 import jsonpickle
 import json
+# from 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\adventure_structure.py' import 'main.py'
+from main import GAME
 
 
 def get_by_name(name, x):
     objs = []
     for i in [x.adventure.major_secrets, x.adventure.major_locations, x.adventure.major_npcs]:
         for j in i:
-            if j.name == name:
+            if j.name.lower() == name.lower():
                 objs.append(j)
     if len(objs) == 1:
         return objs[0]
@@ -108,10 +110,28 @@ def at_the_algebra(self, x, counter, message=None):
 # replace everything from outer function and set them out of function.
 def won(self, x, counter, message=None):
     if counter == 0:
+        get_by_name('Won', x).found = True
         return 'This is a great, awesome sounding, really inspiring and epic epilogue. Thanks for playing!'
-        x.adventure_running = False
+    elif counter == 1:
+        if get_by_name('Won', x).found:
+            get_by_name('Won', x).found = False
+            return 'You already played through this adventure. Do you want to restart from the beginning? [Y/n]'
     else:
-        return False
+        if x.a.lower().startswith('y'):
+            with open('data.json', 'r') as f:
+                data = json.load(f)
+            conditions = jsonpickle.decode(data['adventures']['the drowned aboleth']['conditions'], keys=True)
+            adv = jsonpickle.decode(data['adventures']['the drowned aboleth']['adventure'], keys=True)
+            game = GAME(adventure=adv, conditions=conditions)
+            return game
+        elif x.a.lower().startswith('n'):
+            get_by_name('Won', x).found = True
+            x.trigger_counter = 0
+            return 'Adventure is not being restarted. You will be directed to the main menu.'
+        else:
+            if get_by_name('Won', x).found:
+                get_by_name('Won', x).found = False
+            return 'You already played through this adventure. Do you want to restart from the beginning? [Y/n]'
 
 
 def loveletter(self, x, counter, message=None):
@@ -231,10 +251,10 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
                                 'huge steering wheel and a hatch to go below deck.',
                     conditions=[{sec_h: True}])
     inside_ship = LOCATION(name='Under deck Algebra', description='Inside the Algebra are multiple smaller '
-                                                                         'rooms, including a galley, a mess hall, '
-                                                                         'a medical bay, a weapons storage room and '
-                                                                         'the crew quarters as well as one cell with '
-                                                                         'a prisoner.', conditions=[{sec_h: True}])
+                                                                  'rooms, including a galley, a mess hall, '
+                                                                  'a medical bay, a weapons storage room and '
+                                                                  'the crew quarters as well as one cell with '
+                                                                  'a prisoner.', conditions=[{sec_h: True}])
 
     # Story-secrets:
     sec_a = SECRET(name='There is a message given to the players saying that Matthews is being held on the Algebra.',
@@ -269,7 +289,8 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
     sec_won = SECRET(name='Won', where_to_find=[])
     # relevance=1, positive=True, found=False, conditions=None, description={}
 
-    triggerfunctions = [prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol, secret_message]
+    triggerfunctions = [prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol,
+                        secret_message]
 
     trig_a = TRIGGER(when_triggered=[inside_ship, ship], function=on_the_algebra)
     trig_b = TRIGGER(when_triggered=[captain], function=boss_fight)
@@ -306,27 +327,6 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
     with open('data.json', 'w') as f:
         json.dump(data, f, indent=4)
     return adventure, starting_conditions
-
-
-def play_family_adventure():
-    thede = NPC(name='thede')
-    sophie = NPC(name='sophie')
-    mama = NPC(name='mama', hostile=True)
-    papa = NPC(name='papa', hostile=True)
-    npcs = [thede, sophie, mama, papa]
-
-    wohnzimmer = LOCATION(name='wohnzimmer')
-    kueche = LOCATION(name='kueche')
-    locations = [wohnzimmer, kueche]
-
-    abendessen = SECRET(name="Heute gibt es Tomatenrisotto", where_to_find=[kueche, papa])
-    bettzeit = SECRET(name="Sophie muss um 20:00 ins Bett.", where_to_find=[mama, papa])
-    beruhigen = SECRET(name="Thede kann Sophie beruhigen", where_to_find=[thede, mama])
-    sieg = SECRET(name="won", where_to_find=[sophie])
-    secrets = [sieg, abendessen, bettzeit, beruhigen]
-
-    family_adventure = ADVENTURE('family adventure', major_npcs=npcs, major_locations=locations, major_secrets=secrets)
-    return family_adventure
 
 
 def get_next_scene(adventure, all_former_scenes=None, conditions=None):
@@ -424,7 +424,7 @@ class LOCATION:
         if a is None:
             self.prompt = f'The locationAI describes a location and answers questions about it. The location is a ' \
                           f'{self.name}.{self.description}{per_text}' \
-                          f'{secret_text}\n\nPerson: What do I see at the location?\nLocationAI: ' # trailing space )-:
+                          f'{secret_text}\n\nPerson: What do I see at the location?\nLocationAI: '  # trailing space )-:
         else:
             self.prompt = f'{self.prompt}{a}\nLocationAI: '
         # This prompt sometimes leads to no answer based on prior not answering.
@@ -450,7 +450,11 @@ class SECRET:
         self.conditions = conditions
         self.description = description
         self.prompt = ''
-        if description is None:
+        if isinstance(description, str):
+            self.description = {}
+            for i in where_to_find:
+                self.description.update({i: description})
+        elif description is None:
             self.description = {}
             for i in where_to_find:
                 self.description.update({i: self.name})
@@ -712,4 +716,4 @@ def evaluate_getinputs(former_scenes, adventure):  # former_scenes[0] is the old
 
 
 trigger = [prolouge, on_the_algebra, boss_fight, at_the_algebra, won, loveletter, money, alcohol, secret_message]
-adventure, conditions = the_drowned_aboleth(*trigger)
+# adventure, conditions = the_drowned_aboleth(*trigger)

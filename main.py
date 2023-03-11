@@ -4,11 +4,11 @@
 # Every Scene Type intelligent interpreter
 
 # next steps:
-# write commands (/exit) (take back)
-# secrets need proper names and descriptions (for the adventure writer)
-# add character skills and classes
+# add proper explanations to the adventure writer
+# adventure writer needs to rework secret description
+# add character skills and or classes
 # add fighting
-# A website
+# A website or at least a proper server
 
 
 import jsonpickle
@@ -22,8 +22,9 @@ import discord
 import datetime
 import adventure_writer
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
+
 TOKEN = os.getenv('DISCORD_TOKEN_ROLEPLAY')
+openai.api_key = os.getenv('OPENAI_API_KEY')
 client = discord.Client(intents=discord.Intents.default())
 
 
@@ -40,15 +41,7 @@ def main():
                adventure_structure.at_the_algebra, adventure_structure.won, adventure_structure.loveletter,
                adventure_structure.money, adventure_structure.alcohol, adventure_structure.secret_message]
     adventure, conditions = adventure_structure.the_drowned_aboleth(*trigger)
-    # check the triggers for their functions.
-    # adventure.trigger[0].call(adventure, adventure.trigger[0], 'game_object', 0)
     client.run(TOKEN)
-    # write_to_json()  # Error!
-    # test()
-    # game, username = login()
-    # game.play(username=username)
-    # adventure, conditions = adventure_structure.the_drowned_aboleth()
-    # GAME(adventure=adventure, conditions=conditions).play()
     pass
 
 
@@ -119,7 +112,7 @@ def menu(message, username):
             data['players'][username]['running'] = options[int(message) - 1]
             with open('data.json', 'w') as f:
                 json.dump(data, f, indent=4)
-            return f'You chose "{options[int(message) - 1]}"\nSend anything to continue.'
+            return f'You chose "{options[int(message) - 1]}".\nSend anything to continue.'
         else:
             answer = 'You are in the main menu. You have different options.\n\n'
             for i in options:
@@ -161,11 +154,17 @@ class GAME:
 
     def play(self, message, username):
         answer = None
+        to_be_saved = self
         if self.triggering is not None:
             self.a = message
             answer = self.triggering.call(self.adventure, self.triggering, self, self.trigger_counter, message=message)
             if isinstance(answer, str):
                 self.trigger_counter = self.trigger_counter + 1
+            elif hasattr(answer, 'adventure'):  # isinstance(answer, GAME)
+                self.triggering = None
+                self.trigger_counter = 0
+                to_be_saved = answer
+                answer = 'please enter'
             else:
                 self.triggering = None
                 self.trigger_counter = 0
@@ -185,17 +184,25 @@ class GAME:
                 if answer:
                     answer = master_types[self.sort](username)
                     answer = secret_finder(self.scene.secrets, self.object_of_interest, answer)
+                    to_be_saved = self
+            elif hasattr(answer, 'adventure'):
+                to_be_saved = answer
+                answer = 'Took back your last input.'
+            else:
+                to_be_saved = self
         with open('data.json', 'r') as f:
             data = json.load(f)
-        for i in self.scene.secrets:
-            if i.name == "won" and i.found or self.a == '/exit':  # the /exit case should be in check_for_trigger()
+        for i in self.adventure.major_secrets:
+            if i.name.lower() == "won" and i.found:
                 data['players'][username]['running'] = None
         while len(data['players'][username][self.adventure.name]) > 3:
             del data['players'][username][self.adventure.name][0]
-        data['players'][username][self.adventure.name].append(jsonpickle.encode(self, keys=True))
+        data['players'][username][self.adventure.name].append(jsonpickle.encode(to_be_saved, keys=True))
         with open('data.json', 'w') as f:
             json.dump(data, f, indent=4)
         pos = f'You are here: playing/{self.adventure.name}/{self.scene.location.name}/{self.object_of_interest.name}\n\n'
+        if not isinstance(answer, str):
+            answer = 'please enter'
         return pos + answer
 
     def check_for_trigger(self, username):
@@ -209,50 +216,66 @@ class GAME:
             # commands: back, log (inventory and secrets), clue, help, /mastertype a, describe scene (analyse)
             b = False
             if a.startswith('/b'):
+                with open('data.json', 'r') as f:
+                    data = json.load(f)
+                saves = data['players'][username][self.adventure.name]
+                if len(saves) > 1:
+                    b = jsonpickle.decode(saves[-2], keys=True)  # test this
+                    saves.pop()
+                    saves.pop()
+                    data['players'][username][self.adventure.name] = saves
+                    with open('data.json', 'w') as f:
+                        json.dump(data, f, indent=4)
+                else:
+                    b = 'Can\'t take back'
                 print('Taking back your last input does not work yet. Sorry.')
                 pass
+            elif a.startswith('/e'):
+                with open('data.json', 'r') as f:
+                    data = json.load(f)
+                data['players'][username]['running'] = None
+                with open('data.json', 'w') as f:
+                    json.dump(data, f, indent=4)
             elif a.startswith('/l'):
+                b = 'Here is everything you know:\n'
+                j = 0
                 for i in self.adventure.major_secrets:
                     if i.found and i.active:
-                        print(i.name)
+                        j = j+1
+                        b = f'{b}{j}.\t{i.name}\n'
             elif a.startswith('/c'):
+                l = []
                 for i in self.adventure.major_secrets:
-                    l = []
                     if i.active and i.clue and not i.found:
                         l.append(i)
-                    clue = random.choice(l)
-                    clue.found = True
-                    print(f'Here is your clue: {clue.name}.{clue.description}')
+                clue = random.choice(l)
+                clue.found = True
+                b = f'Here is your clue: {clue.name}.{clue.description}'
             elif a.startswith('/h'):
-                print(
-                    'Here are all commands and what they do. Just enter them after the <please enter:> instead of '
-                    'your normal statement.')
-                print(f'"/b" or "/back"         This command takes back your last input.')
-                print(f'"/h" or "/help"         This command lists and explains all commands.')
-                print(f'"/l" or "/log"          This command lists everything you have already found and collected.')
-                print(f'"/c" or "/clue"         This command gives you a clue on how to proceed.')
-                print(f'"/d" or "/describe"     This command lists all the data of the current scene.')
-
-                print(f'The following commands need a normal statement after the command.')
-                print(f'E. g. "/info What do I see?"')
-                print(f'"/i" or "/info"         This command classifies the following statement as an info question.')
-                print(f'"/a" or "/action"       This command classifies the following statement as an action.')
-                print(f'"/v" or "/verbatim"     This command classifies the following statement as verbatim (speech).')
-                print(f'"/t" or "/talk"         This command classifies the following statement as an attempt to')
-                print(f'                        start a conversation.')
-                print(
-                    f'"/f" or "/fight"        This command classifies the following statement as an aggressive action.')
-                print(f'"/r" or "/room change"  This command classifies the following statement as a room change.')
-                print('These 6 commands are not necessary, usually inputs are automatically classified correctly.')
+                b = (
+                    f'Here are all commands and what they do:\n'
+                    f'\t"/b" or "/back"\t\t\tThis command takes back your last input.\n'
+                    f'\t"/h" or "/help"\t\t\t This command lists and explains all commands.\n'
+                    f'\t"/l" or "/log"\t\t\t\t This command lists everything you have already found and collected.\n'
+                    f'\t"/c" or "/clue"\t\t\t This command gives you a clue on how to proceed.\n'
+                    f'\t"/d" or "/describe"\t This command lists all the data of the current scene.\n'
+                    f'\nThe following commands need a normal statement after the command:\n'
+                    f'\t\t\tE. g. "/info What do I see?"\n'
+                    f'\t"/i" or "/info"\t\t\t\t  This command classifies the following statement as an info question.\n'
+                    f'\t"/a" or "/action"\t\t\t This command classifies the following statement as an action.\n'
+                    f'\t"/v" or "/verbatim"\t\tThis command classifies the following statement as verbatim (speech).\n'
+                    f'\t"/t" or "/talk"\t\t\t\t This command classifies the following statement as an attempt to\n'
+                    f'\t\t\t\t\tstart a conversation.\n'
+                    f'\t"/f" or "/fight"\t\t\t\tThis command classifies the following statement as an aggressive action.\n'
+                    f'\t"/r" or "/room change"\t\tThis command classifies the following statement as a room change.\n'
+                )
             elif a.startswith('/d'):
-                print(f'Scene type: {self.scene.type}')
-                print('location: ' + self.scene.location.name)
-                print('amount of npcs: ' + str(len(self.scene.npcs)))
+                b = f'Scene type: {self.scene.type}\nLocation: {self.scene.location.name}\nAmount of npcs: {str(len(self.scene.npcs))}'
                 for j in self.scene.npcs:
-                    print('NPC: ' + j.name)
-                print('amount of secrets: ' + str(len(self.scene.secrets)))
+                    b = b + '\nNPC: ' + j.name
+                b = b + '\nAmount of secrets: ' + str(len(self.scene.secrets))
                 for j in self.scene.secrets:
-                    print('Secret: ' + j.name)
+                    b = b + '\nSecret: ' + j.name
             elif a.startswith('/i'):
                 b = True
                 self.a = ''.join(a.split()[1:])
@@ -281,10 +304,11 @@ class GAME:
                     self.a = ''.join(a.split()[1:])
                 self.sort = 'room change'
             else:
-                print('Command not understood, see \'/help\' for help on commands.')
+                return 'Command not understood, see \'/help\' for help on commands.'
             # commands: back, log (inventory and secrets), clue, help, /mastertype a, describe scene (analyse)
-            # '/b, /i, /c, /h, /d, /l, /a, /s, /t, /f, /r'
-            back.append(b)
+            # '/b, /i, /c, /h, /d, /l, /a, /v, /t, /f, /r'
+            return b
+        pass
         for i in self.adventure.trigger:
             triggered = False
             for j in i.when_triggered:
@@ -312,9 +336,9 @@ class GAME:
 
     def info(self, username=None):
         if isinstance(self.object_of_interest, adventure_structure.NPC):
-            return self.object_of_interest.talk(self.a)  # or fight?
+            return self.object_of_interest.talk(self.a)  # Why are here no secrets???
         elif isinstance(self.object_of_interest, adventure_structure.LOCATION):
-            return self.object_of_interest.describe(self.a)
+            return self.object_of_interest.describe(self.a) # Why are here no secrets???
         else:
             return 'Error <info>'
 
@@ -433,7 +457,7 @@ def secret_finder(scene_secrets, object_of_interest, text):
             if not i.found:
                 secrets.append(i)
     for i in secrets:
-        prompt = f'Secret: {i.name}\nText: {text}\n\nAnswer:'
+        prompt = f'Secret: {i.description[object_of_interest]}\nText: {text}\n\nAnswer:'
         mentioned = openai.Completion.create(model='davinci:ft-personal:secret-finder-2023-02-02-05-34-08',
                                              prompt=prompt, temperature=0, max_tokens=5, stop='###')
         mentioned = mentioned['choices'][0]['text']
