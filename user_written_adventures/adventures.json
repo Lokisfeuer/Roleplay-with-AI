@@ -192,12 +192,12 @@
     },
     "Lokisglut": {
         "background": {
-            "object_of_interest": "kaugsburg",
-            "name_of_adventure": "Kilo",
-            "object_type": "locations"
+            "object_of_interest": "npcs",
+            "name_of_adventure": "myadventure",
+            "object_type": ""
         },
-        "Kilo": {
-            "name": "Kilo",
+        "myadventure": {
+            "name": "myadventure",
             "starting_conditions": [
                 null,
                 [
@@ -205,26 +205,72 @@
                 ]
             ],
             "npcs": {
-                "kalpha": {
-                    "name": "qalpha",
+                "malpha": {
+                    "name": "Cha1",
                     "hostile": "False",
                     "conditions": [],
-                    "description": "q_as_k"
+                    "description": "This is Cha 1"
                 },
-                "kbravo": {
-                    "name": "qbravo",
+                "mbeta": {
+                    "name": "Cha 2",
                     "hostile": "False",
                     "conditions": [],
-                    "description": "q_as_k"
+                    "description": "This is CHa 2"
                 }
             },
             "locations": {
-                "kaugsburg": {
-                    "name": "quaksburg",
+                "ghjkl": {
+                    "name": "Tavernia",
                     "conditions": [],
-                    "description": "q_as_k"
+                    "description": "gnaul"
                 }
             },
+            "secrets": {}
+        },
+        "someadventure": {
+            "name": "someadventure",
+            "starting_conditions": [
+                null,
+                [
+                    null
+                ]
+            ],
+            "npcs": {
+                "dsfg": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [],
+                    "description": ""
+                }
+            },
+            "locations": {
+                "dasf": {
+                    "name": "",
+                    "conditions": [],
+                    "description": ""
+                }
+            },
+            "secrets": {
+                "dasf": {
+                    "name": "",
+                    "where_to_find": [],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [],
+                    "description": "",
+                    "clue": "True"
+                }
+            }
+        },
+        "myadenture": {
+            "name": "myadenture",
+            "starting_conditions": [
+                null,
+                []
+            ],
+            "npcs": {},
+            "locations": {},
             "secrets": {}
         }
     }

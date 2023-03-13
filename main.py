@@ -4,12 +4,9 @@
 # Every Scene Type intelligent interpreter
 
 # next steps:
-# add proper explanations to the adventure writer
-# adventure writer needs to rework secret description
 # add character skills and or classes
 # add fighting
-# A website or at least a proper server
-
+# add the possibility to lose the game.
 
 import jsonpickle
 import openai
@@ -110,8 +107,12 @@ def menu(message, username):
     if message[0].isdigit():
         if int(message) - 1 < len(options):
             data['players'][username]['running'] = options[int(message) - 1]
+            start_texts = {
+                'writing adventure': 'Enter "/open name_of_adventure" to create a new adventure or reopen an old one.'}
             with open('data.json', 'w') as f:
                 json.dump(data, f, indent=4)
+            if options[int(message) - 1] in start_texts.keys():
+                return f'You chose "{options[int(message) - 1]}".\n{start_texts[options[int(message) - 1]]}'
             return f'You chose "{options[int(message) - 1]}".\nSend anything to continue.'
         else:
             answer = 'You are in the main menu. You have different options.\n\n'

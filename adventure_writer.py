@@ -1,16 +1,20 @@
 import json
 
-# check names
-# Description (and names) should be multiple words long.
-# command to show all objects
-# if Error not in keywords, check whether its an object to navigate
+
+# Things you cannot do with the adventure writer:
+# Trigger
+# proper secret descriptions relative to location or person
+
+# Two objects should not be able to have the same name.
 
 
 def talk_and_write(message, author):
     with open('user_written_adventures/adventures.json', 'r') as f:
         data = json.load(f)
     if author not in data.keys():
-        return 'To setup a new adventure, enter "/new name_of_adventure".'
+        return 'Enter "/open name_of_adventure" to create a new adventure or reopen an old one.'
+    elif data[author]['background']['name_of_adventure'] is None:
+        return 'Enter "/open name_of_adventure" to create a new adventure or reopen an old one.'
     object_of_interest = data[author]['background']['object_of_interest']
     name_of_adventure = data[author]['background']['name_of_adventure']
     adventure = data[author][name_of_adventure]
@@ -24,22 +28,27 @@ def talk_and_write(message, author):
             index = list(keyword_dict.keys()).index(object_of_interest)
             if index == 2:
                 object_of_interest = 'starting_conditions'
-                answer = f'Please enter now the starting conditions.'
+                answer = f'Please enter now the starting conditions of your adventure. This means you can enter a ' \
+                         f'location and any amount of npcs. The adventure will then start at this location and ' \
+                         f'with these npcs present. When you are done or don\'t want to set starting conditions just ' \
+                         f'enter "/done".'
             else:
                 object_of_interest = list(keyword_dict.keys())[index + 1]
-                answer = f'Please enter now all your {object_of_interest}.'
+                answer = f'Please enter now all your {object_of_interest} the same way.'
             data[author]['background']['object_of_interest'] = object_of_interest
             with open('user_written_adventures/adventures.json', 'w') as f:
                 json.dump(data, f, indent=4)
             return answer
         if message not in data[author][name_of_adventure][object_of_interest].keys():
-            data[author][name_of_adventure][object_of_interest].update({message.lower(): keyword_dict[object_of_interest]})
+            message = message.lower().replace(' ', '_')
+            data[author][name_of_adventure][object_of_interest].update({message: keyword_dict[object_of_interest]})
             with open('user_written_adventures/adventures.json', 'w') as f:
                 json.dump(data, f, indent=4)
-            return f'Received {object_of_interest[:-1]} "{message}"'
+            return f'Received {object_of_interest[:-1]} "{message}".'
         else:
             return f'This {object_of_interest[:-1]} already exists.'
     else:
+        answer = ''
         if object_of_interest == 'starting_conditions':
             if message in list(adventure['npcs'].keys()) + list(adventure['locations'].keys()):
                 if message in adventure['locations'].keys():
@@ -55,8 +64,11 @@ def talk_and_write(message, author):
                 data[author]['background']['object_of_interest'] = object_of_interest
                 data[author]['background']['object_type'] = 'npcs'
                 answer = f'Starting conditions set as location: ' \
-                         f'"{adventure["starting_conditions"][0]}" and npcs: "{adventure["starting_conditions"][1]}"'
-                answer = f'{answer}\nYou are now at npc "{object_of_interest}". You can set attributes with keywords.'
+                         f'"{adventure["starting_conditions"][0]}" and npcs: "{adventure["starting_conditions"][1]}".'
+                instruction = f'You are right now editing "{object_of_interest}".\n\tTo change the object to edit ' \
+                              f'enter: "/new_object_to_edit".\n\tTo set the attributes of this object ' \
+                              f'enter "attribute value" with value being the value you want to set for this attribute.'
+                answer = f'{answer}\n\n{instruction}'
             else:
                 answer = 'This is not a valid condition. Type /done to end.'
             with open('user_written_adventures/adventures.json', 'w') as f:
@@ -70,14 +82,21 @@ def talk_and_write(message, author):
             elif keyword.endswith(':'):
                 keyword = keyword[:-1]
             if keyword not in full_object.keys():
-                return 'Error keyword not in keywords.'
-            value = message.split()[-1]
-            if keyword == 'conditions' or keyword == 'where_to_find':
-                data[author][name_of_adventure][object_type][object_of_interest][keyword].append(value)
+                answer = 'Error entered attribute not in attributes of this object.\n\n'
             else:
-                data[author][name_of_adventure][object_type][object_of_interest][keyword] = value
-            with open('user_written_adventures/adventures.json', 'w') as f:
-                json.dump(data, f, indent=4)
+                message = message.split()
+                value = message[-1]
+                if keyword == 'conditions' or keyword == 'where_to_find':
+                    data[author][name_of_adventure][object_type][object_of_interest][keyword].append(value)
+                elif keyword == 'name' or keyword == 'description':
+                    value = message[1]
+                    for i in message[2:]:
+                        value = value + ' ' + i
+                    data[author][name_of_adventure][object_type][object_of_interest][keyword] = value
+                else:
+                    data[author][name_of_adventure][object_type][object_of_interest][keyword] = value
+                with open('user_written_adventures/adventures.json', 'w') as f:
+                    json.dump(data, f, indent=4)
         else:
             found = False
             for i in ['npcs', 'locations', 'secrets']:
@@ -98,7 +117,8 @@ def talk_and_write(message, author):
                 if message == '/done':
                     missing = check_for_completeness(author, name_of_adventure)
                     if isinstance(missing, bool):
-                        write_adventure_from_data(author, name_of_adventure, adventure)
+                        write_adventure_from_data(author, name_of_adventure, adventure)  # set adventure in data to None
+                        data[author]['background']['name_of_adventure'] = None
                         return True  # send full document?
                     else:
                         answer = f'/adventure writer/{name_of_adventure}/{object_type}/{object_of_interest}\n\n'
@@ -106,15 +126,17 @@ def talk_and_write(message, author):
                             answer = f'{answer}{i}\n'
                         answer = f'{answer}\nTherefore adventure could not be written.'
                         return answer
-                elif message == '/exit':
-                    return False
-                return 'Error object not found.'
-        print('Reached end of talk_and_write.')
-        answer = f'/adventure writer/{name_of_adventure}/{object_type}/{object_of_interest}'
-        answer = f'{answer}\n\n'
+                all_objects = 'List of all objects:'
+                for i in ['npcs', 'locations', 'secrets']:
+                    for j in data[author][name_of_adventure][i].keys():
+                        all_objects = f'{all_objects}\n\t{j}'
+                return f'Error object not found.\n\n{all_objects}'
+        answer = f'{answer}/adventure writer/{name_of_adventure}/{object_type}/{object_of_interest}\n\n'
         for i in full_object.keys():
             answer = f'{answer}{i}: {full_object[i]}\n'
-        instruction = 'Please enter'
+        instruction = f'You are right now editing "{object_of_interest}".\n\tTo change the object to edit ' \
+                      f'enter: "/new_object_to_edit".\n\tT set the attributes of this object ' \
+                      f'enter "attribute value" with value being the value you want to set for this attribute.'
         answer = f'{answer}\n{instruction}'
         return answer
 
@@ -176,7 +198,6 @@ def write_adventure_from_data(author, name_of_adventure, adventure):
                     parameters = f'{parameters}, {k}={adventure[i][j][k]}'
             parameters = parameters[2:]
             obj_commands = f'{obj_commands}\t{j} = adv_str.{i[:-1].upper()}({parameters})\n'
-
             list_command = f'{list_command}, {j}'
         list_command = f'{i} = [{list_command[2:]}]'
         all_list_commands = f'{all_list_commands}\t{list_command}\n'
@@ -202,6 +223,7 @@ def write_adventure_from_data(author, name_of_adventure, adventure):
         f.write(full_doc)
 
 
+
 def setup(author, name_of_adventure):
     background = {'object_of_interest': 'npcs', 'name_of_adventure': name_of_adventure, 'object_type': ''}
     content = {'background': background, name_of_adventure: {}}
@@ -222,14 +244,24 @@ def setup(author, name_of_adventure):
         answer = 'Setup new adventure.'
     with open('user_written_adventures/adventures.json', 'w') as f:
         json.dump(data, f, indent=4)
-    return answer + '\nPlease enter your npcs one by one. When you are done enter "/done".'
+    instruction = ' We will start with the npcs. Please enter the name of your first npc. Then continue this way ' \
+                  'entering your npcs one by one until you have entered all your npcs. Then enter "/done". If you' \
+                  'want to exit the adventure writer enter "/exit". You can also open a new adventure with ' \
+                  '"/open name_of_adventure". But any other message will be considered an npc.'
+    return answer + instruction
 
 
 def main(author, message):
-    if message.startswith('/new'):
-        send = ''
-        for i in message.split()[1:]:
-            send = send + i
-        return setup(author, send)
+    message = message.replace('\\', '/')
+    if message.startswith('/open '):
+        message = message.replace(' ', '_')
+        return setup(author, message[6:])
+    elif message.startswith('/exit'):
+        with open('user_written_adventures/adventures.json', 'r') as f:
+            data = json.load(f)
+        data[author]['background']['name_of_adventure'] = None
+        with open('user_written_adventures/adventures.json', 'w') as f:
+            json.dump(data, f, indent=4)
+        return False
     else:
         return talk_and_write(message, author)
