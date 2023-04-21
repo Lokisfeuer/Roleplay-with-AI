@@ -1,12 +1,37 @@
 # Future plans with AI:
-# A setting generator.
 # an intelligent adventure writer.
 # Every Scene Type intelligent interpreter
+# a setting generator
 
 # next steps:
-# add character skills and or classes
+# implement a rulebook -> Characters and Setting
 # add fighting
+# add multiplayer (Discord server / group chats)
 # add the possibility to lose the game.
+# all of this comes down to implementing a proper rulebook. D&D seems best for that purpose:
+#   D&D all publications: https://the-eye.eu/public/Books/rpg.rem.uz/Dungeons%20%26%20Dragons/
+#   Open source d&d character generator: https://www.npcgenerator.com/
+#   An equivalent to this for locations. https://www.google.com/search?client=firefox-b-d&q=d%26d+location+generator
+#   They need to be intertwined through secrets.
+#   Also, they need to kind of react different on different types of characters.
+
+# To do in order:
+# 1. look at: the npcgenerator code; the standard rulebook character creation;
+# 2. Decide on what is important of the npc generator and which location generator to choose.
+# 3. Decide what is important for the player character, which skills should be implemented
+# 4. Build the character generator
+# 5. If possible, find a way to intertwine npcs and locations with secrets.
+# 6. Build the setting generator
+
+# https://github.com/AdrianSI666/DnD_Bestiary-Spellbook-CT
+# https://github.com/opendnd/personae Can do relations between characters!
+# https://github.com/topics/npc-generator
+
+
+
+
+
+
 
 import jsonpickle
 import openai
@@ -18,6 +43,9 @@ import jsonlines
 import discord
 import datetime
 import adventure_writer
+import p_character
+import skills
+import user_written_adventures.Lokisglut_Test0304 as test0304
 
 
 TOKEN = os.getenv('DISCORD_TOKEN_ROLEPLAY')
@@ -38,8 +66,11 @@ def main():
                adventure_structure.at_the_algebra, adventure_structure.won, adventure_structure.loveletter,
                adventure_structure.money, adventure_structure.alcohol, adventure_structure.secret_message]
     adventure, conditions = adventure_structure.the_drowned_aboleth(*trigger)
+    test0304.test0304()
     client.run(TOKEN)
-    pass
+    # pull data.json, fine_tuning.json from local server
+    # pull folder user_written_adventures from local server
+    # every hour push these on the local server
 
 
 @client.event
@@ -59,7 +90,7 @@ async def on_message(message):
     async for i in message.channel.history(limit=1):
         sec = (datetime.datetime.now(datetime.timezone.utc) - i.created_at).total_seconds()
         if sec > 1800:
-            data['players'][username]['running'] = None
+            data['players'][username]['running'] = None  # some things like pc generation need to be stopped propperly.
     with open('data.json', 'w') as f:
         json.dump(data, f, indent=4)
     running = data['players'][username]['running']
@@ -91,6 +122,42 @@ async def on_message(message):
             data['players'][username]['running'] = None
             with open('data.json', 'w') as f:
                 json.dump(data, f, indent=4)
+    elif running == 'create PC':
+        answer = p_character.main_create(username, message.content)
+        if isinstance(answer, bool):
+            if answer:
+                answer = 'PC written successfully.'
+            else:
+                answer = 'Exited PC creator and deleted PC.'
+            with open('data.json', 'r') as f:
+                data = json.load(f)
+            data['players'][username]['running'] = None
+            with open('data.json', 'w') as f:
+                json.dump(data, f, indent=4)
+    elif running == 'create skill':
+        answer = p_character.add_skill(username, message.content)
+        if isinstance(answer, bool):
+            if answer:
+                answer = 'Skill written successfully.'
+            else:
+                answer = 'Exited skill creator and deleted skill.'
+            with open('data.json', 'r') as f:
+                data = json.load(f)
+            data['players'][username]['running'] = None
+            with open('data.json', 'w') as f:
+                json.dump(data, f, indent=4)
+    elif running == 'level up PC':
+        answer = p_character.level_up(username, message.content)
+        if isinstance(answer, bool):
+            if answer:
+                answer = 'Levelled up successfully.'
+            else:
+                answer = 'Exited but did not level up any character.'
+            with open('data.json', 'r') as f:
+                data = json.load(f)
+            data['players'][username]['running'] = None
+            with open('data.json', 'w') as f:
+                json.dump(data, f, indent=4)
     # elif running in data['players'][username][characters].keys():
     else:
         answer = 'Error no running'
@@ -100,7 +167,7 @@ async def on_message(message):
 def menu(message, username):
     with open('data.json', 'r') as f:
         data = json.load(f)
-    options = ['writing adventure']  # list of strings of options
+    options = ['writing adventure', 'create PC', 'create skill', 'level up PC']  # list of strings of options
     for i in data['adventures'].keys():
         options.append(i)
     # append all npcs or add the menu point "create character"
@@ -108,7 +175,11 @@ def menu(message, username):
         if int(message) - 1 < len(options):
             data['players'][username]['running'] = options[int(message) - 1]
             start_texts = {
-                'writing adventure': 'Enter "/open name_of_adventure" to create a new adventure or reopen an old one.'}
+                'writing adventure': 'Enter "/open name_of_adventure" to create a new adventure or reopen an old one.',
+                'create PC': 'Enter the name of the PC you want to create.',
+                'create skill': 'Enter the name of the skill you want to create.',
+                'level up PC': 'Enter the name of the character you want to level up.'
+            }
             with open('data.json', 'w') as f:
                 json.dump(data, f, indent=4)
             if options[int(message) - 1] in start_texts.keys():
@@ -121,7 +192,8 @@ def menu(message, username):
             answer = f'{answer}\nPlease enter the digit of the menu point you want to choose.'
             return answer
     else:
-        answer = 'You are in the main menu. You have different options. To return to this menu just type "/exit".\n\n'
+        answer = 'You are in the main menu. You have different options. To return to this menu just type "/exit" (if ' \
+                 'this doesn\'t work, try again).\n\n'
         for i in options:
             answer = f'{answer}\t({options.index(i)+1})\t{i}\n'
         answer = f'{answer}\nPlease enter the digit of the menu point you want to choose.'
@@ -129,7 +201,7 @@ def menu(message, username):
 
 
 class GAME:
-    def __init__(self, object_of_interest=None, scene=None, adventure=None, a=None, conditions=None,
+    def __init__(self, adventure=None, a=None, conditions=None,
                  running_adventure=True, former_scenes=None, sort=None, triggering=None, trigger_counter=0):
         if conditions is None:
             self.conditions = [None, [None]]
@@ -335,7 +407,23 @@ class GAME:
                         return 'please enter'
         return True
 
+    def check_for_skill(self, username, type):
+        with open('data.json', 'r') as f:
+            data = json.load(f)
+        pc = data['players'][username]['characters'][data['players'][username]['current_PC']]
+        if 'skills' in pc:
+            for i in pc['skills'].keys():
+                if i in self.a and type == data['skills'][i]['type']:
+                    answer = skills.main(username, self.a, i, self)
+                    if answer is not None:
+                        return answer
+                    break
+        return None
+
     def info(self, username=None):
+        answer = self.check_for_skill(username, 'knowledge')
+        if answer is not None:
+            return answer
         if isinstance(self.object_of_interest, adventure_structure.NPC):
             return self.object_of_interest.talk(self.a)  # Why are here no secrets???
         elif isinstance(self.object_of_interest, adventure_structure.LOCATION):
@@ -344,6 +432,9 @@ class GAME:
             return 'Error <info>'
 
     def action(self, username=None):
+        answer = self.check_for_skill(username, 'action')
+        if answer is not None:
+            return answer
         if isinstance(self.object_of_interest, adventure_structure.NPC):
             # all social skills need to be implemented in speech. And all tiny social actions as well.
             self.object_of_interest = self.scene.location
@@ -358,6 +449,9 @@ class GAME:
         return self.object_of_interest.describe(self.a, secrets=secrets)
 
     def speech(self, username=None):
+        answer = self.check_for_skill(username, 'social')
+        if answer is not None:
+            return answer
         if not isinstance(self.object_of_interest, adventure_structure.NPC):
             if len(self.scene.npcs) == 0:
                 return 'There is no interesting character to talk to.'
@@ -385,7 +479,7 @@ class GAME:
         if con is None:
             loc = where(self.a, self.adventure)
         else:
-            loc = con
+            loc = con[0]
         if self.a.startswith('Okay,'):
             npcs = []
             for i in self.adventure.major_npcs:
@@ -406,18 +500,24 @@ class GAME:
         self.sort = None
         # commands: take back, inventory and secrets, hint, help, describe scene (analyse), /mastertype a
         answer = self.check_for_trigger(username)
-        if not isinstance(answer, bool):
-            self.scene.location.describe(npcs=self.scene.npcs)
-        else:
-            if answer:
-                answer = self.scene.location.describe(npcs=self.scene.npcs)
-                answer = secret_finder(self.scene.secrets, self.object_of_interest, answer)
-        return f'You are going to the {loc.name}.{answer}'
+        if isinstance(answer, bool):
+            answer = self.scene.location.describe(npcs=self.scene.npcs)
+            answer = secret_finder(self.scene.secrets, self.object_of_interest, answer)
+
+        return f'You are going to the {loc.name}.\n{answer}'
 
     def fight(self, username=None):
-        return 'Fighting does not yet work.'
+        answer = self.check_for_skill(username, 'fight')
+        if answer is not None:
+            return answer
+        # Three options on where to attack (random but for one fight constant sequence of 0;1;2 where to hit.).
+        # length of sequence varies randomly between 3 and 5. (also constant for one fight.)
+        return 'You are fighting. Which fighting skills do you want to use?'
 
     def talk(self, username=None):
+        answer = self.check_for_skill(username, 'social')
+        if answer is not None:
+            return answer
         if len(self.scene.npcs) == 0:
             return 'There is no interesting character to talk to.'
         person = who(self.a, self.scene)
@@ -442,10 +542,10 @@ def classify(a, adventure):
     if response == 'room change':
         if where(a, adventure) == 'could not find':
             response = 'action'
-    with open('data.json', 'r') as f:
+    with open('fine_tuning.json', 'r') as f:
         data = json.load(f)
     data['newsample'].update({prompt: ' ' + response + '###'})
-    with open('data.json', 'w') as f:
+    with open('fine_tuning.json', 'w') as f:
         json.dump(data, f, indent=4)
     return response
 
@@ -469,10 +569,10 @@ def secret_finder(scene_secrets, object_of_interest, text):
         if mentioned.lower().startswith('y'):
             text = f'{text}\n\n<You found an important piece of information: {i.name}>'
             i.found = True
-        with open('data.json', 'r') as f:
+        with open('fine_tuning.json', 'r') as f:
             data = json.load(f)
-        data['newsecret_sample'].update({prompt: ' ' + text + '###'})
-        with open('data.json', 'w') as f:
+        data['newsecret_sample'].update({prompt: ' ' + mentioned.lower()[0] + '###'})
+        with open('fine_tuning.json', 'w') as f:
             json.dump(data, f, indent=4)
     return text
 
@@ -487,10 +587,10 @@ def who(a, scene):
     response = openai.Completion.create(model='curie:ft-personal:who-2022-12-17-23-11-02',
                                         prompt=prompt, temperature=0, max_tokens=12, stop="###")
     response = response['choices'][0]['text']
-    with open('data.json', 'r') as f:
+    with open('fine_tuning.json', 'r') as f:
         data = json.load(f)
     data['newwho'].update({prompt: response + '###'})
-    with open('data.json', 'w') as f:
+    with open('fine_tuning.json', 'w') as f:
         json.dump(data, f, indent=4)
     if response.startswith(' '):
         response = response[1:]
@@ -527,10 +627,10 @@ def where(a, adventure):
     response = openai.Completion.create(model='curie:ft-personal:where-2022-12-17-23-05-15',
                                         prompt=prompt, temperature=0, max_tokens=18, stop='###')
     response = response['choices'][0]['text']
-    with open('data.json', 'r') as f:
+    with open('fine_tuning.json', 'r') as f:
         data = json.load(f)
     data['newwhere'].update({prompt: response + '###'})
-    with open('data.json', 'w') as f:
+    with open('fine_tuning.json', 'w') as f:
         json.dump(data, f, indent=4)
     if response.startswith(' '):
         response = response[1:]
@@ -551,7 +651,7 @@ def where(a, adventure):
 def write_as_jsonlines(key):
     path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
     x = []
-    with open('data.json') as f:
+    with open('fine_tuning.json') as f:
         data = json.load(f)[key]
     if isinstance(data, dict):
         for i in data.keys():

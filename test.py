@@ -3,12 +3,12 @@ import jsonlines
 import os
 import random
 import textwrap
-import main
+# import main
 import adventure_structure
 import jsonpickle
 import openai
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# openai.api_key = os.getenv('OPENAI_API_KEY')
 
 
 def write_trainingsdata_for_secretrecognition():
@@ -70,10 +70,10 @@ def write_trainingsdata_for_secretrecognition():
                     full_dict.update({f'Secret: {j}\nText: {response}\n\nAnswer: \n\n###\n\n': 'N###'})
             else:
                 full_dict.update({f'Secret: {j}\nText: {response}\n\nAnswer: \n\n###\n\n': 'Y###'})
-    with open('data.json') as f:
+    with open('fine_tuning.json') as f:
         data = json.load(f)
     data.update({'secret sample': full_dict})
-    with open('data.json', 'w') as f:
+    with open('fine_tuning.json', 'w') as f:
         json.dump(data, f, indent=4)
     print(write_as_jsonlines('secret sample'))
 
@@ -97,7 +97,7 @@ def write_to_json():  # from jsonlines
                 else:
                     file_dict.update(j)
         full_dict.update({i[:-6]: file_dict})
-    with open('data.json', 'w') as out_file:
+    with open('fine_tuning.json', 'w') as out_file:
         json.dump(full_dict, out_file, indent=4)
 
 
@@ -109,17 +109,17 @@ def write_single_file_to_json(file):
                 file_dict.update({j['prompt']: j['completion']})
             else:
                 file_dict.update(j)
-    with open('data.json', 'r') as f:
+    with open('fine_tuning.json', 'r') as f:
         data = json.load(f)
     data.update({file[:-6]: file_dict})
-    with open('data.json', 'w') as f:
+    with open('fine_tuning.json', 'w') as f:
         json.dump(data, f, indent=4)
 
 
 def write_as_jsonlines(key):
     path = 'C:\\Users\\thede\\PycharmProjects\\Roleplay-with-AI\\'
     x = []
-    with open('data.json') as f:
+    with open('fine_tuning.json') as f:
         data = json.load(f)[key]
     if isinstance(data, dict):
         for i in data.keys():
@@ -397,7 +397,7 @@ def rewrite_classifier_sample():
 # write_trainingsdata_for_secretrecognition()
 # rewrite_sec_sample()
 # write_single_file_to_json('sample.jsonl')
-rewrite_classifier_sample()
+# rewrite_classifier_sample()
 
 
 def check_for_trigger(self):
@@ -515,3 +515,7 @@ def check_for_trigger(self):
     else:
         pass
         # One trigger at a time!
+
+
+
+call()

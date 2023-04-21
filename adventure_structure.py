@@ -43,18 +43,17 @@ def prolouge(self, x, counter, message=None):
 def on_the_algebra(self, x, counter, message=None):
     if counter == 0:
         for i in x.scene.npcs:
-            if i.name == 'captain' or i.name == 'matthews':
+            if i.name == 'matthews':
                 pass
             else:
                 x.scene.npcs.remove(i)
-        if x.scene.location.name == 'Under deck Algebra':
-            if get_by_name('Matthews freed', x).found:
-                x.conditions = [get_by_name('Top deck Algebra', x), [get_by_name('Captain', x)]]
-            else:
-                if x.sort is not None:
-                    string = 'Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.\n' \
-                             'Do you want to free Matthews? [Y/n]'
-                    return string
+        if get_by_name('Matthews freed', x).found:
+            x.conditions = [get_by_name('Top deck Algebra', x), [get_by_name('Captain', x)]]
+        else:
+            if x.sort is not None:
+                string = 'Matthews Joachim Karl von Philsa is bound and gagged lying in the prison cell.\n' \
+                         'Do you want to free Matthews? [Y/n]'
+                return string
     elif x.scene.location.name == 'Under deck Algebra' and counter == 1 and not get_by_name('Matthews freed', x).found:
         answer = x.a.lower()
         if answer[0] == 'y':
@@ -103,7 +102,8 @@ def at_the_algebra(self, x, counter, message=None):
                     return f'{names[2:]} could relieve the guards and let you on bord of the Algebra.\nShould they do so? [Y/n]'
                 elif counter == 1 and x.a.lower().startswith('y'):
                     get_by_name('Guards relieved.', x).found = True
-                    return f'You can now proceed to the Algebra.'
+                    get_by_name('won', x).found = True
+                    return f'Congratulations, you are very close to finding and freeing Matthews Joachim Karl von Phisa. As the ending of this adventure does not work properly you have hereby achieved the best possible outcome. Congratulations!'
     return True
 
 
@@ -244,11 +244,12 @@ def the_drowned_aboleth(prolouge, on_the_algebra, boss_fight, at_the_algebra, wo
                                            'bay is full with more or less valuable treasury.',
                    conditions=[{sec_bay: True}])
     pier = LOCATION(name='pier', description='There is only a single vessel in the pier. It is the Algebra, '
-                                             'a big sailing vessel with three masts. If they are here Tom and Jerry'
+                                             'a big sailing vessel with three masts. If they are here Tom and Steve'
                                              'are guarding the Algebra.')
-    ship = LOCATION(name='Top deck Algebra',
+    ship = LOCATION(name='Algebra',
                     description='The Algebra is a big sailing vessel. It\'s got three masts. On the main deck is a'
-                                'huge steering wheel and a hatch to go below deck.',
+                                'huge steering wheel and a hatch to go below deck. Below deck is a cell where '
+                                'Matthews Joachim Karl von Philsa is being held.',
                     conditions=[{sec_h: True}])
     inside_ship = LOCATION(name='Under deck Algebra', description='Inside the Algebra are multiple smaller '
                                                                   'rooms, including a galley, a mess hall, '
@@ -355,6 +356,8 @@ class NPC:
         self.hostile = hostile
         self.conditions = conditions
         self.active = None
+        # add big five; if none they are random from normal distributions from the real people. Add big five
+        # to the description / prompt
         if description is None:
             self.description = ''
         else:
@@ -426,10 +429,14 @@ class LOCATION:
                           f'{self.name}.{self.description}{per_text}' \
                           f'{secret_text}\n\nPerson: What do I see at the location?\nLocationAI: '  # trailing space )-:
         else:
-            self.prompt = f'{self.prompt}{a}\nLocationAI: '
+            if self.prompt.startswith('The locationAI describes'):
+                self.prompt = f'{self.prompt}{a}\nLocationAI: '
+            else:
+                self.prompt = f'The locationAI describes a location and answers questions about it. The location is a' \
+                              f' {self.name}.{self.description}{per_text}{secret_text}\n\nPerson: {a}\nLocationAI: '
         # This prompt sometimes leads to no answer based on prior not answering.
         response = openai.Completion.create(model="text-davinci-002", prompt=self.prompt, temperature=0.8,
-                                            max_tokens=256, stop='Person')
+                                            max_tokens=256, stop='\n\nPerson:')
         response = response['choices'][0]['text']
         self.prompt = f'{self.prompt}{response}\n\nPerson: '
         return response

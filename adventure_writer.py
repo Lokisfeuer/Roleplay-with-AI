@@ -8,6 +8,9 @@ import json
 # Two objects should not be able to have the same name.
 
 
+# when added to where to find from secrets need to check whether objects exist or not
+
+
 def talk_and_write(message, author):
     with open('user_written_adventures/adventures.json', 'r') as f:
         data = json.load(f)
@@ -19,10 +22,10 @@ def talk_and_write(message, author):
     name_of_adventure = data[author]['background']['name_of_adventure']
     adventure = data[author][name_of_adventure]
     object_type = data[author]['background']['object_type']
-    keyword_dict = {'npcs': {'name': '', 'hostile': 'False', 'conditions': [], 'description': ''},
-                    'locations': {'name': '', 'conditions': [], 'description': ''},
+    keyword_dict = {'npcs': {'name': '', 'hostile': 'False', 'conditions': [{}], 'description': ''},
+                    'locations': {'name': '', 'conditions': [{}], 'description': ''},
                     'secrets': {'name': '', 'where_to_find': [], 'relevance': '1', 'positive': 'True',
-                                'found': 'False', 'conditions': [], 'description': '', 'clue': 'True'}}
+                                'found': 'False', 'conditions': [{}], 'description': '', 'clue': 'True'}}
     if object_of_interest in keyword_dict.keys():
         if message == '/done':
             index = list(keyword_dict.keys()).index(object_of_interest)
@@ -60,7 +63,7 @@ def talk_and_write(message, author):
             elif message == '/done':
                 if data[author][name_of_adventure]['starting_conditions'][1] == []:
                     data[author][name_of_adventure]['starting_conditions'][1].append(None)
-                object_of_interest = list(data[author][name_of_adventure]['npcs'].keys())[0]
+                object_of_interest = list(data[author][name_of_adventure]['npcs'].keys())[0]  # adventure needs at least one npc
                 data[author]['background']['object_of_interest'] = object_of_interest
                 data[author]['background']['object_type'] = 'npcs'
                 answer = f'Starting conditions set as location: ' \
@@ -86,8 +89,10 @@ def talk_and_write(message, author):
             else:
                 message = message.split()
                 value = message[-1]
-                if keyword == 'conditions' or keyword == 'where_to_find':
+                if keyword == 'where_to_find':
                     data[author][name_of_adventure][object_type][object_of_interest][keyword].append(value)
+                elif keyword == 'conditions':
+                    data[author][name_of_adventure][object_type][object_of_interest][keyword][0].update({value: True})
                 elif keyword == 'name' or keyword == 'description':
                     value = message[1]
                     for i in message[2:]:
@@ -116,16 +121,12 @@ def talk_and_write(message, author):
             if not found:
                 if message == '/done':
                     missing = check_for_completeness(author, name_of_adventure)
-                    if isinstance(missing, bool):
-                        write_adventure_from_data(author, name_of_adventure, adventure)  # set adventure in data to None
+                    if isinstance(missing, list):
+                        write_adventure_from_data(author, name_of_adventure, adventure, missing)  # set adventure in data to None
                         data[author]['background']['name_of_adventure'] = None
                         return True  # send full document?
                     else:
-                        answer = f'/adventure writer/{name_of_adventure}/{object_type}/{object_of_interest}\n\n'
-                        for i in missing:
-                            answer = f'{answer}{i}\n'
-                        answer = f'{answer}\nTherefore adventure could not be written.'
-                        return answer
+                        return f'/adventure writer/{name_of_adventure}/{object_type}/{object_of_interest}\n\n{missing}'
                 all_objects = 'List of all objects:'
                 for i in ['npcs', 'locations', 'secrets']:
                     for j in data[author][name_of_adventure][i].keys():
@@ -166,7 +167,7 @@ def check_for_completeness(author, name_of_adventure):
     validated = []
     for x in all_objects.keys():
         for i in all_objects.keys():
-            if i not in validated and list_in_list(all_objects[i]['conditions'], validated):
+            if i not in validated and list_in_list(all_objects[i]['conditions'][0].keys(), validated):
                 if 'where_to_find' in all_objects[i].keys():
                     if list_in_list(all_objects[i]['where_to_find'], validated):
                         validated.append(i)
@@ -176,28 +177,35 @@ def check_for_completeness(author, name_of_adventure):
                     break
     # now validated should be the perfectly ordered list of object-strings
     if not list_in_list(all_objects.keys(), validated):
-        answer = ['There is a logical loop in your adventure. Not everything can be fully defined.\n']
+        missing = ['There is a logical loop in your adventure. Not everything can be fully defined.\n']
         for i in all_objects.keys():
             if i not in validated:
-                answer.append(f'The object with name "{i}" has unvalidated conditions or where to find.')
+                missing.append(f'The object with name "{i}" has unvalidated conditions or where to find.')
+        answer = ''
+        for i in missing:
+            answer = f'{answer}{i}\n'
+        answer = f'{answer}\nTherefore adventure could not be written.'
         return answer
-    return True
+    return validated
 
 
-def write_adventure_from_data(author, name_of_adventure, adventure):
+def write_adventure_from_data(author, name_of_adventure, adventure, all_objects_in_order):
     obj_commands = ''
     all_list_commands = ''
+    all_obj_commands = {}
     for i in ['npcs', 'locations', 'secrets']:
         list_command = ''
         for j in adventure[i].keys():
             parameters = ''
-            for k in adventure[i][j].keys():
+            for k in adventure[i][j].keys():  # conditions need special treatment, removing their string 's
                 if k == 'name' or k == 'description':
                     parameters = f'{parameters}, {k}=\'{adventure[i][j][k]}\''
+                elif k == 'conditions':
+                    parameters = f'{parameters},' + f' {k}={adventure[i][j][k]}'.replace('\'', '')
                 else:
                     parameters = f'{parameters}, {k}={adventure[i][j][k]}'
             parameters = parameters[2:]
-            obj_commands = f'{obj_commands}\t{j} = adv_str.{i[:-1].upper()}({parameters})\n'
+            all_obj_commands.update({j: f'\t{j} = adv_str.{i[:-1].upper()}({parameters})\n'})
             list_command = f'{list_command}, {j}'
         list_command = f'{i} = [{list_command[2:]}]'
         all_list_commands = f'{all_list_commands}\t{list_command}\n'
@@ -216,12 +224,13 @@ def write_adventure_from_data(author, name_of_adventure, adventure):
 \t\tjson.dump(data, f, indent=4)
 \treturn adventure, starting_conditions
 '''
+    for i in all_objects_in_order:
+        obj_commands = f'{obj_commands}{all_obj_commands[i]}'
     full_function_content = f'{obj_commands}\n{all_list_commands}\n{nam_command}\n{sta_con_command}\n{adv_command}'
     imp_commands = 'import adventure_structure as adv_str\nimport json\nimport jsonpickle'
-    full_doc = f'{imp_commands}\n\n\ndef {name_of_adventure.lower().replace(" ","_")}():\n{full_function_content}\n'
+    full_doc = f'{imp_commands}\n\n\ndef {name_of_adventure.lower().replace(" ", "_")}():\n{full_function_content}\n'
     with open(f'user_written_adventures/{author}_{name_of_adventure}.py', 'w') as f:
         f.write(full_doc)
-
 
 
 def setup(author, name_of_adventure):

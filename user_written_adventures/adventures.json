@@ -192,9 +192,9 @@
     },
     "Lokisglut": {
         "background": {
-            "object_of_interest": "npcs",
-            "name_of_adventure": "myadventure",
-            "object_type": ""
+            "object_of_interest": "hamlet",
+            "name_of_adventure": "Test0304",
+            "object_type": "npcs"
         },
         "myadventure": {
             "name": "myadventure",
@@ -270,6 +270,263 @@
                 []
             ],
             "npcs": {},
+            "locations": {},
+            "secrets": {}
+        },
+        "Test0304": {
+            "name": "Test0304",
+            "starting_conditions": [
+                "living_room",
+                [
+                    "hamlet",
+                    "claudius"
+                ]
+            ],
+            "npcs": {
+                "hamlet": {
+                    "name": "Hamlet",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "Hamlet is the young prince coming back from wittenberg to revenge his father."
+                },
+                "ophelia": {
+                    "name": "Ophelia",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "Ophelia is Hamlets mother and wife of Polonius."
+                },
+                "polonius": {
+                    "name": "Polonius",
+                    "hostile": "False",
+                    "conditions": [
+                        {
+                            "claudius_was_killed_by_polonius": true
+                        }
+                    ],
+                    "description": "Hamlets evil uncle who killed former king Claudius to take the throne for himself."
+                },
+                "laertes": {
+                    "name": "Laertes",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "Laertes is a young guy in the castle who hates Hamlet."
+                },
+                "claudius": {
+                    "name": "Claudius",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "the former king is now a ghost."
+                }
+            },
+            "locations": {
+                "the_throne_room": {
+                    "name": "Throne room",
+                    "conditions": [
+                        {
+                            "claudius_was_killed_by_polonius": true
+                        }
+                    ],
+                    "description": "a majestatic throne room"
+                },
+                "the_duel_room": {
+                    "name": "The Duel room",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "a room to fight each other."
+                },
+                "exile": {
+                    "name": "A city far away.",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "This city is far away from the castle"
+                },
+                "living_room": {
+                    "name": "Living room of the castle",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "A huge living room"
+                },
+                "hamlets_bedroom": {
+                    "name": "Hamlets bedroom",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "Hamlets bedroom"
+                },
+                "laertes_room": {
+                    "name": "laertes room",
+                    "conditions": [
+                        {
+                            "laertes_hates_hamlet": true
+                        }
+                    ],
+                    "description": "Here lives Laertes"
+                }
+            },
+            "secrets": {
+                "laertes_hates_hamlet": {
+                    "name": "Laertes hates Hamlet",
+                    "where_to_find": [
+                        "laertes",
+                        "polonius",
+                        "hamlets_bedroom"
+                    ],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "Hamlet caused Laertes to lose his big love so Laertes now hates Hamlet.",
+                    "clue": "True"
+                },
+                "hamlet_will_be_king": {
+                    "name": "Hamlet is the future king of denmark",
+                    "where_to_find": [
+                        "the_throne_room"
+                    ],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [
+                        {
+                            "laertes_hates_hamlet": true,
+                            "claudius_was_killed_by_polonius": true
+                        }
+                    ],
+                    "description": "Hamlet is the trueborn son of king Claudius and thereby his heir.",
+                    "clue": "False"
+                },
+                "claudius_was_killed_by_polonius": {
+                    "name": "claudius was killed by polonius",
+                    "where_to_find": [],
+                    "relevance": "1",
+                    "positive": "True",
+                    "found": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": "polonius killed claudius to take the throne for himself and is therefore not the rightful heir.",
+                    "clue": "True"
+                }
+            }
+        },
+        "test0304": {
+            "name": "test0304",
+            "starting_conditions": [
+                null,
+                []
+            ],
+            "npcs": {},
+            "locations": {},
+            "secrets": {}
+        }
+    },
+    "Dradie": {
+        "background": {
+            "object_of_interest": "npcs",
+            "name_of_adventure": "Starship,_the_first_warp",
+            "object_type": ""
+        },
+        "Starship,_the_first_warp": {
+            "name": "Starship,_the_first_warp",
+            "starting_conditions": [
+                null,
+                []
+            ],
+            "npcs": {
+                "malveric": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "salima": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "andrew": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "xionyun": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "malcom": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "carolin": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "jagleen": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "lean": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "paldrovsci": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                },
+                "gynia": {
+                    "name": "",
+                    "hostile": "False",
+                    "conditions": [
+                        {}
+                    ],
+                    "description": ""
+                }
+            },
             "locations": {},
             "secrets": {}
         }
